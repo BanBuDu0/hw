@@ -12,7 +12,7 @@
 
 using namespace std;
 
-#define CLOCKS_PER_SEC  ((clock_t)1000)
+// #define CLOCKS_PER_SEC  ((clock_t)1000)
 
 
 void split(const string &s, vector<long> &sv, const char flag = ' ') {
@@ -124,7 +124,8 @@ private:
 };
 
 void print_result(const vector<vector<long>> &result) {
-    printf("%d\n", result.size());
+    int len = result.size();
+    printf("%d\n", len);
     for (auto &v : result) {
         for (auto &l : v) {
             printf("%ld ", l);
@@ -140,7 +141,7 @@ int main() {
     map<long, list<pair<long, int>>> graph;
     string data_path = R"(D:\code\leecode\src\com\huawei\data\test_data.txt)";
     string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
-    generate_graph(data_path, graph);
+    generate_graph(linux_path, graph);
     vector<vector<long>> result;
     Tarjan tarjan;
     tarjan.findCycles(graph, result);
