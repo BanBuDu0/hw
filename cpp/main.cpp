@@ -139,6 +139,7 @@ int main() {
     start = clock();
     map<long, list<pair<long, int>>> graph;
     string data_path = R"(D:\code\leecode\src\com\huawei\data\test_data.txt)";
+    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
     generate_graph(data_path, graph);
     vector<vector<long>> result;
     Tarjan tarjan;
