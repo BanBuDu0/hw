@@ -1,125 +1,16 @@
 #include <iostream>
-#include <fstream>
-#include <cassert>
-#include <string>
+#include <list>
 #include <vector>
-#include <map>
+#include <string>
+#include <fstream>
 #include <sstream>
+#include <map>
 #include <set>
 #include <stack>
+#include <chrono>
+#include <ctime>
 
 using namespace std;
-
-class Vertex {
-public:
-    Vertex() = default;
-
-    explicit Vertex(long i) {
-        id = i;
-    }
-
-    ~Vertex() = default;
-
-    void addAdjacentVertex(const Vertex &v) {
-        adjacentVertex.push_back(v);
-    }
-
-    vector<Vertex> getAdjacentVertexes() {
-        return adjacentVertex;
-    }
-
-    long getId() {
-        return id;
-    }
-
-    bool operator<(const Vertex &v) const {
-        return this->id < v.id;
-    }
-
-private:
-    long id{};
-    vector<Vertex> adjacentVertex;
-
-};
-
-class Edge {
-public:
-    Edge(const Vertex &v1, const Vertex &v2, int w) {
-        vertex1 = v1;
-        vertex2 = v2;
-        weight = w;
-    }
-
-    ~Edge() = default;
-
-    Vertex getVertex1() {
-        return vertex1;
-    }
-
-    Vertex getVertex2() {
-        return vertex2;
-    }
-
-    int getWeight() {
-        return weight;
-    }
-
-private:
-    Vertex vertex1;
-    Vertex vertex2;
-    int weight;
-};
-
-class Graph {
-public:
-    Graph() = default;
-
-    ~Graph() = default;
-
-    void addEdge(long id1, long id2, int weight) {
-        Vertex vertex1;
-        if (allVertex.count(id1) > 0) {
-            vertex1 = allVertex[id1];
-        } else {
-            vertex1 = Vertex(id1);
-            allVertex.insert(make_pair(id1, vertex1));
-        }
-        Vertex vertex2;
-        if (allVertex.count(id2) > 0) {
-            vertex2 = allVertex[id2];
-        } else {
-            vertex2 = Vertex(id2);
-            allVertex.insert(make_pair(id2, vertex2));
-        }
-
-        Edge edge(vertex1, vertex2, weight);
-        allEdges.push_back(edge);
-        vertex1.addAdjacentVertex(vertex2);
-    }
-
-    vector<Edge> getAllEdges() {
-        return allEdges;
-    }
-
-    vector<Vertex> getAllVertex() {
-        vector<Vertex> temp;
-        for (auto &it : allVertex) {
-            long key = it.first;
-            temp.push_back(it.second);
-        }
-        return temp;
-    }
-
-    void printAllEdges() {
-        for (auto &allEdge : allEdges) {
-            cout << allEdge.getVertex1().getId() << " -> " << allEdge.getVertex2().getId() << endl;
-        }
-    }
-
-private:
-    vector<Edge> allEdges;
-    map<long, Vertex> allVertex;
-};
 
 
 void split(const string &s, vector<long> &sv, const char flag = ' ') {
@@ -132,23 +23,31 @@ void split(const string &s, vector<long> &sv, const char flag = ' ') {
     }
 }
 
-
-void generate_graph(const string &file, Graph &g) {
+void generate_graph(const string &file, map<long, list<pair<long, int>>> &g) {
     ifstream infile;
     infile.open(file.data());
-    assert(infile.is_open());
 
     string s;
     while (getline(infile, s)) {
         vector<long> temp;
         split(s, temp, ',');
-        //cout << "read: " << temp[0] << endl;
-        g.addEdge(temp[0], temp[1], temp[2]);
-
+        //        cout << "read: " << temp[0] << endl;
+        g[temp[0]].push_back(make_pair(temp[1], temp[2]));
     }
     infile.close();
 }
 
+void test_graph(const map<long, list<pair<long, int>>> &graph) {
+    for (auto &it : graph) {
+        long key = it.first;
+        list<pair<long, int>> temp = it.second;
+        cout << "vex: " << key << " ";
+        for (auto &l : temp) {
+            cout << "a " << l.first << " " << "w " << l.second << " ";
+        }
+        cout << endl;
+    }
+}
 
 class Tarjan {
 public:
@@ -156,82 +55,94 @@ public:
 
     ~Tarjan() = default;
 
-    void findCycles(Graph g, vector<vector<Vertex> > &result) {
-        for (auto &item : g.getAllVertex()) {
-            findAllSimpleCycles(item, item, result);
-            visited.insert(item);
+    void findCycles(const map<long, list<pair<long, int>>> &graph, vector<vector<long> > &result) {
+        for (auto &it : graph) {
+            long vertex = it.first;
+            findAllSimpleCycles(vertex, vertex, result, graph);
+            visited.insert(vertex);
             while (!markedStack.empty()) {
-                Vertex v = markedStack.top();
+                long v = markedStack.top();
                 markedStack.pop();
                 markedSet.erase(v);
             }
         }
     }
 
-    bool findAllSimpleCycles(Vertex start, Vertex current, vector<vector<Vertex> > &result) {
+    bool findAllSimpleCycles(long start, long current, vector<vector<long> > &result,
+                             const map<long, list<pair<long, int>>> &graph) {
         bool hasCycle = false;
         pointStack.push(current);
         markedSet.insert(current);
         markedStack.push(current);
-
-        for (Vertex w : current.getAdjacentVertexes()) {
-            if (visited.count(w) == 0) {
-                if (w.getId() == start.getId()) {
-                    hasCycle = true;
-                    if (pointStack.size() > 2 && pointStack.size() < 8) {
-                        vector<Vertex> cycle;
-                        stack<Vertex> temp;
-                        while (!pointStack.empty()) {
-                            temp.push(pointStack.top());
-                            pointStack.pop();
+        if (graph.count(current) > 0) {
+            list<pair<long, int>> temp = graph.find(current)->second;
+            for (auto &p : temp) {
+                long w = p.first;
+                if (visited.count(w) == 0) {
+                    if (w == start) {
+                        hasCycle = true;
+                        if (pointStack.size() > 2 && pointStack.size() < 8) {
+                            vector<long> cycle;
+                            stack<long> temp_stack;
+                            while (!pointStack.empty()) {
+                                temp_stack.push(pointStack.top());
+                                pointStack.pop();
+                            }
+                            while (!temp_stack.empty()) {
+                                cycle.push_back(temp_stack.top());
+                                pointStack.push(temp_stack.top());
+                                temp_stack.pop();
+                            }
+                            result.push_back(cycle);
                         }
-                        while (!temp.empty()) {
-                            cycle.push_back(temp.top());
-                            temp.pop();
-                        }
-                        result.push_back(cycle);
+                    } else if (markedSet.count(w) == 0) {
+                        hasCycle = findAllSimpleCycles(start, w, result, graph) || hasCycle;
                     }
-                } else if (markedSet.count(w) == 0) {
-                    hasCycle = findAllSimpleCycles(start, w, result) || hasCycle;
                 }
             }
         }
 
         if (hasCycle) {
-            while (markedStack.top().getId() != current.getId()) {
-                Vertex v = markedStack.top();
+            while (markedStack.top() != current) {
+                long v = markedStack.top();
                 markedStack.pop();
                 markedSet.erase(v);
             }
-            Vertex v = markedStack.top();
+            long v = markedStack.top();
             markedStack.pop();
             markedSet.erase(v);
         }
-
         pointStack.pop();
         return hasCycle;
     }
 
 private:
-    set<Vertex> visited, markedSet;
-    stack<Vertex> pointStack, markedStack;
+    set<long> visited, markedSet;
+    stack<long> pointStack, markedStack;
 };
 
-
-int main() {
-    Graph g;
-    string data_path = R"(D:\code\leecode\src\com\huawei\data\test_data.txt)";
-    generate_graph(data_path, g);
-//    g.printAllEdges();
-    vector<vector<Vertex> > result;
-    Tarjan t;
-    t.findCycles(g, result);
-    for (auto &i : result) {
-        for (auto &j : i) {
-            cout << j.getId();
-            cout << " ";
+void print_result(const vector<vector<long>> &result) {
+    cout << result.size() << endl;
+    for (auto &v : result) {
+        for (auto &l : v) {
+            cout << l << " ";
         }
         cout << endl;
     }
+}
+
+
+int main() {
+    clock_t start, finish;
+    start = clock();
+    map<long, list<pair<long, int>>> graph;
+    string data_path = R"(D:\code\leecode\src\com\huawei\data\test_data.txt)";
+    generate_graph(data_path, graph);
+    vector<vector<long>> result;
+    Tarjan tarjan;
+    tarjan.findCycles(graph, result);
+    finish = clock();
+    print_result(result);
+    cout << (double) (finish - start) << endl;
     return 0;
 }

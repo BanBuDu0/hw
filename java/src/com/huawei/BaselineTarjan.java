@@ -229,6 +229,14 @@ public class BaselineTarjan {
         System.out.println(result.size());
         long endTime = System.currentTimeMillis();
         System.out.println(endTime - startTime + "ms");
+//
+//        for(Vertex v: graph.getAllVertex()){
+//            System.out.print("vertex: " + v.getId() + " ");
+//            for(Vertex j: v.getAdjacentVertexes()){
+//                System.out.println(j.getId() + " ");
+//            }
+//            System.out.println();
+//        }
     }
 }
 
