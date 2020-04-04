@@ -12,6 +12,8 @@
 
 using namespace std;
 
+#define CLOCKS_PER_SEC  ((clock_t)1000)
+
 
 void split(const string &s, vector<long> &sv, const char flag = ' ') {
     sv.clear();
@@ -122,12 +124,12 @@ private:
 };
 
 void print_result(const vector<vector<long>> &result) {
-    cout << result.size() << endl;
+    printf("%d\n", result.size());
     for (auto &v : result) {
         for (auto &l : v) {
-            cout << l << " ";
+            printf("%ld ", l);
         }
-        cout << endl;
+        printf("\n");
     }
 }
 
@@ -143,6 +145,6 @@ int main() {
     tarjan.findCycles(graph, result);
     finish = clock();
     print_result(result);
-    cout << (double) (finish - start) << endl;
+    printf("%f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
     return 0;
 }
