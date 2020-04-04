@@ -190,12 +190,15 @@ public class TarjanMultiThread {
         for (int i = 0; i < vertices.size(); ++i) {
             Vertex vertex = vertices.get(i);
             Set<Vertex> visited = visiteds.get(i);
+            for (int j = 0; j < i; ++j) {
+                visited.add(vertices.get(j));
+            }
             Deque<Vertex> pointStack = pointStacks.get(i);
             Deque<Vertex> markedStack = markedStacks.get(i);
             Set<Vertex> markedSet = markedSets.get(i);
             List<List<Vertex>> result = results.get(i);
             executor.submit(() -> {
-//                    System.out.println(Thread.currentThread().getId() + " " + Thread.currentThread().getName());
+                    System.out.println(Thread.currentThread().getId() + " " + Thread.currentThread().getName());
                 findAllSimpleCycles(vertex, vertex, result, visited, pointStack, markedStack, markedSet);
                 visited.add(vertex);
                 while (!markedStack.isEmpty()) {
@@ -221,13 +224,9 @@ public class TarjanMultiThread {
         return res;
     }
 
-    private int count = 0;
-
     private boolean findAllSimpleCycles(Vertex start, Vertex current, List<List<Vertex>> result,
                                         Set<Vertex> visited, Deque<Vertex> pointStack,
                                         Deque<Vertex> markedStack, Set<Vertex> markedSet) {
-        ++count;
-//        System.out.println("in loop: " + count);
         boolean hasCycle = false;
         pointStack.offerFirst(current);
         markedSet.add(current);
@@ -264,8 +263,6 @@ public class TarjanMultiThread {
         }
 
         pointStack.pollFirst();
-        --count;
-        System.out.println("exit loop: " + count);
         return hasCycle;
     }
 

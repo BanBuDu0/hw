@@ -1,0 +1,2 @@
+D:\hw\cpp\solution\Debug\solution.exe
+D:\hw\cpp\solution\Debug\solution.pdb

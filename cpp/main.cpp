@@ -15,7 +15,7 @@ using namespace std;
 // #define CLOCKS_PER_SEC  ((clock_t)1000)
 
 
-void split(const string &s, vector<long> &sv, const char flag = ' ') {
+inline void split(const string &s, vector<long> &sv, const char flag = ' ') {
     sv.clear();
     istringstream iss(s);
     string temp;

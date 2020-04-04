@@ -219,7 +219,7 @@ public class BaselineTarjan {
         String linux_path = "/home/syj/Documents/hw/data/test_data.txt";
         String data_path = "D:\\code\\leecode\\src\\com\\huawei\\data\\test_data.txt";
         BaselineTarjan baseline = new BaselineTarjan();
-        Graph graph = baseline.generate_data(linux_path);
+        Graph graph = baseline.generate_data(data_path);
 
         long startTime = System.currentTimeMillis();
         List<List<Vertex>> result = baseline.findAllSimpleCycles(graph);
@@ -234,7 +234,7 @@ public class BaselineTarjan {
 //        for(Vertex v: graph.getAllVertex()){
 //            System.out.print("vertex: " + v.getId() + " ");
 //            for(Vertex j: v.getAdjacentVertexes()){
-//                System.out.println(j.getId() + " ");
+//                System.out.print(j.getId() + " ");
 //            }
 //            System.out.println();
 //        }
