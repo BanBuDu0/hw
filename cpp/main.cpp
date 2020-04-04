@@ -32,6 +32,10 @@ public:
         return id;
     }
 
+    bool operator<(const Vertex &v) const {
+        return this->id < v.id;
+    }
+
 private:
     long id{};
     vector<Vertex> adjacentVertex;
@@ -218,7 +222,7 @@ int main() {
     Graph g;
     string data_path = R"(D:\code\leecode\src\com\huawei\data\test_data.txt)";
     generate_graph(data_path, g);
-    g.printAllEdges();
+//    g.printAllEdges();
     vector<vector<Vertex> > result;
     Tarjan t;
     t.findCycles(g, result);
