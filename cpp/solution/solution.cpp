@@ -9,13 +9,14 @@
 #include <stack>
 #include <chrono>
 #include <ctime>
+#include <deque>
 
 using namespace std;
 
 // #define CLOCKS_PER_SEC  ((clock_t)1000)
 
 
-inline void split(const string& s, vector<long>& sv, const char flag = ' ') {
+inline void split(const string &s, vector<long> &sv, const char flag = ' ') {
     sv.clear();
     istringstream iss(s);
     string temp;
@@ -25,9 +26,8 @@ inline void split(const string& s, vector<long>& sv, const char flag = ' ') {
     }
 }
 
-void generate_graph(const string& file, map<long, list<pair<long, int>>>& g) {
-    ifstream infile;
-    infile.open(file.data());
+void generate_graph(string &file, map<long, list<pair<long, int>>> &g) {
+    ifstream infile(file.data(), ios::in);
 
     string s;
     while (getline(infile, s)) {
@@ -39,12 +39,12 @@ void generate_graph(const string& file, map<long, list<pair<long, int>>>& g) {
     infile.close();
 }
 
-void test_graph(const map<long, list<pair<long, int>>>& graph) {
-    for (auto& it : graph) {
+void test_graph(map<long, list<pair<long, int>>> &graph) {
+    for (auto &it : graph) {
         long key = it.first;
         list<pair<long, int>> temp = it.second;
         cout << "vex: " << key << " ";
-        for (auto& l : temp) {
+        for (auto &l : temp) {
             cout << "a " << l.first << " " << "w " << l.second << " ";
         }
         cout << endl;
@@ -57,48 +57,44 @@ public:
 
     ~Tarjan() = default;
 
-    void findCycles(const map<long, list<pair<long, int>>>& graph, vector<vector<long> >& result) {
-        for (auto& it : graph) {
+    void findCycles(map<long, list<pair<long, int>>> &graph, vector<vector<map<long, vector<long>>>> &result) {
+        for (auto &it : graph) {
             long vertex = it.first;
             findAllSimpleCycles(vertex, vertex, result, graph);
             visited.insert(vertex);
             while (!markedStack.empty()) {
-                long v = markedStack.top();
-                markedStack.pop();
+                long v = markedStack.front();
+                markedStack.pop_front();
                 markedSet.erase(v);
             }
         }
     }
 
-    bool findAllSimpleCycles(long start, long current, vector<vector<long> >& result,
-        const map<long, list<pair<long, int>>>& graph) {
+    bool findAllSimpleCycles(long start, long current, vector<vector<map<long, vector<long>>>> &result,
+                             map<long, list<pair<long, int>>> &graph) {
         bool hasCycle = false;
-        pointStack.push(current);
+        pointStack.push_front(current);
         markedSet.insert(current);
-        markedStack.push(current);
+        markedStack.push_front(current);
         if (graph.count(current) > 0) {
             list<pair<long, int>> temp = graph.find(current)->second;
-            for (auto& p : temp) {
+            for (auto &p : temp) {
                 long w = p.first;
                 if (visited.count(w) == 0) {
                     if (w == start) {
                         hasCycle = true;
                         if (pointStack.size() > 2 && pointStack.size() < 8) {
-                            vector<long> cycle;
-                            stack<long> temp_stack;
-                            while (!pointStack.empty()) {
-                                temp_stack.push(pointStack.top());
-                                pointStack.pop();
+                            map<long, vector<long>> cycle;
+                            vector<long> sub_cycle;
+                            //now pointStack is begin: 56 197 18 end
+                            //rbegin = 18, rend = 56 + 1
+                            for (auto it = pointStack.rbegin() + 1; it != pointStack.rend(); ++it) {
+                                sub_cycle.push_back(*it);
                             }
-                            while (!temp_stack.empty()) {
-                                cycle.push_back(temp_stack.top());
-                                pointStack.push(temp_stack.top());
-                                temp_stack.pop();
-                            }
-                            result.push_back(cycle);
+                            cycle[pointStack.back()] = sub_cycle;
+                            result[sub_cycle.size() - 2].push_back(cycle);
                         }
-                    }
-                    else if (markedSet.count(w) == 0) {
+                    } else if (markedSet.count(w) == 0) {
                         hasCycle = findAllSimpleCycles(start, w, result, graph) || hasCycle;
                     }
                 }
@@ -106,35 +102,23 @@ public:
         }
 
         if (hasCycle) {
-            while (markedStack.top() != current) {
-                long v = markedStack.top();
-                markedStack.pop();
+            while (markedStack.front() != current) {
+                long v = markedStack.front();
+                markedStack.pop_front();
                 markedSet.erase(v);
             }
-            long v = markedStack.top();
-            markedStack.pop();
+            long v = markedStack.front();
+            markedStack.pop_front();
             markedSet.erase(v);
         }
-        pointStack.pop();
+        pointStack.pop_front();
         return hasCycle;
     }
 
 private:
     set<long> visited, markedSet;
-    stack<long> pointStack, markedStack;
+    deque<long> pointStack, markedStack;
 };
-
-void print_result(const vector<vector<long>>& result) {
-    int len = result.size();
-    printf("%d\n", len);
-    for (auto& v : result) {
-        for (auto& l : v) {
-            printf("%ld ", l);
-        }
-        printf("\n");
-    }
-}
-
 
 int main() {
     clock_t start, finish;
@@ -142,12 +126,43 @@ int main() {
     map<long, list<pair<long, int>>> graph;
     string data_path = R"(D:\code\leecode\src\com\huawei\data\test_data.txt)";
     string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
+    string huawei_path = R"(/root/hw/data/test_data.txt)";
     generate_graph(data_path, graph);
-    vector<vector<long>> result;
+
+    vector<vector<map<long, vector<long>>>> sub_result;
+
+    sub_result.resize(5);
+
     Tarjan tarjan;
-    tarjan.findCycles(graph, result);
+    tarjan.findCycles(graph, sub_result);
+
+    //output to txt
+    int len = 0;
+    ofstream outfile("out.txt", ios::trunc);
+    outfile << "l\n";
+    for (vector<map<long, vector<long>>> &all_sub_result : sub_result) {
+        for (map<long, vector<long>> &m_vec : all_sub_result) {
+            for (auto &m_map : m_vec) {
+                ++len;
+                vector<long> temp = m_map.second;
+                outfile << m_map.first << " ";
+                //here temp is vertexes in one cycle
+                for (auto &l : temp) {
+                    if (l == temp.back()) {
+                        outfile << l;
+                    } else {
+                        outfile << l << " ";
+                    }
+                }
+                outfile << "\n";
+            }
+        }
+    }
+    outfile.seekp(0, ios::beg);
+    outfile << to_string(len);
+    outfile.close();
+
     finish = clock();
-    print_result(result);
-    printf("%f ms\n", ((double)(finish - start) / CLOCKS_PER_SEC) * 1000);
+    printf("%f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
     return 0;
 }
