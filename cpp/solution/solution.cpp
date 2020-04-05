@@ -88,11 +88,11 @@ public:
                             vector<long> sub_cycle;
                             //now pointStack is begin: 56 197 18 end
                             //rbegin = 18, rend = 56 + 1
-                            for (auto it = pointStack.rbegin() + 1; it != pointStack.rend(); ++it) {
+                            for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
                                 sub_cycle.push_back(*it);
                             }
                             cycle[pointStack.back()] = sub_cycle;
-                            result[sub_cycle.size() - 2].push_back(cycle);
+                            result[sub_cycle.size() - 3].push_back(cycle);
                         }
                     } else if (markedSet.count(w) == 0) {
                         hasCycle = findAllSimpleCycles(start, w, result, graph) || hasCycle;
@@ -139,28 +139,29 @@ int main() {
     //output to txt
     int len = 0;
     ofstream outfile("out.txt", ios::trunc);
-    outfile << "l\n";
+    vector<vector<long>> all_res;
     for (vector<map<long, vector<long>>> &all_sub_result : sub_result) {
         for (map<long, vector<long>> &m_vec : all_sub_result) {
             for (auto &m_map : m_vec) {
                 ++len;
                 vector<long> temp = m_map.second;
-                outfile << m_map.first << " ";
-                //here temp is vertexes in one cycle
-                for (auto &l : temp) {
-                    if (l == temp.back()) {
-                        outfile << l;
-                    } else {
-                        outfile << l << " ";
-                    }
-                }
-                outfile << "\n";
+                all_res.push_back(temp);
             }
         }
     }
-    outfile.seekp(0, ios::beg);
-    outfile << to_string(len);
+    outfile << len << endl;
+    for (auto &v:all_res) {
+        for (auto &l : v) {
+            if (l == v.back()) {
+                outfile << l;
+            } else {
+                outfile << l << ",";
+            }
+        }
+        outfile << "\n";
+    }
     outfile.close();
+
 
     finish = clock();
     printf("%f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
