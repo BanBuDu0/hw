@@ -1,4 +1,9 @@
-﻿#include <iostream>
+//
+// Created by Sunyu on 2020/4/6.
+// 指定了递归调用的深度最大为7层，同时优化了一些递归时图查找
+//
+
+#include <iostream>
 #include <list>
 #include <vector>
 #include <string>
@@ -21,77 +26,59 @@ public:
 
     void generate_graph(string &file_path) {
         FILE *file = fopen(file_path.c_str(), "r");
-        unsigned int u, v, c;
+        unsigned int from, to, weight;
 
-//        int cnt=0;
-        while (fscanf(file, "%u,%u,%u", &u, &v, &c) != EOF) {
-            graph[u].push_back(make_pair(v, c));
-//            ++cnt;
+        while (fscanf(file, "%u,%u,%u", &from, &to, &weight) != EOF) {
+            graph[from].push_back(make_pair(to, weight));
         }
-
+        end = graph.end();
     }
 
     void findCycles() {
         int i = 0;
+        int size = graph.size();
         for (auto &it : graph) {
-//            if (i % 100 == 0) {
-//            printf("%d/%d\n", i, graph.size());
-//            }
+            if (i % 100 == 0) {
+                printf("%d/%d\n", i, size);
+            }
             ++i;
             unsigned int vertex = it.first;
             findAllSimpleCycles(vertex, vertex, 0);
-            visited.insert(vertex);
-            markedStack.clear();
-            markedSet.clear();
+//            marked.insert(vertex);
         }
     }
 
-    bool findAllSimpleCycles(unsigned int start, unsigned int current, int depth) {
-        bool hasCycle = false;
+    void findAllSimpleCycles(unsigned int start, unsigned int current, int depth) {
         pointStack.push_front(current);
-        markedSet.insert(current);
-        markedStack.push_front(current);
-        bool has_adjacent = false;
+        visited.insert(current);
 
         //if current have adjacent
-        if (graph.count(current) > 0) {
-            list<pair<unsigned int, int>> temp = graph.find(current)->second;
-            for (auto &p : temp) {
+        auto adjacent_list = graph.find(current);
+        if (adjacent_list != end) {
+            for (auto &p : adjacent_list->second) {
                 unsigned int adjacent = p.first;
-                if (visited.count(adjacent) == 0) {
-                    if (adjacent == start) {
-                        hasCycle = true;
-                        if (pointStack.size() > 2 && pointStack.size() < 8) {
-                            map<unsigned int, vector<unsigned int>> cycle;
-                            vector<unsigned int> sub_cycle;
-                            //now pointStack is begin: 56 197 18 endx
-                            //rbegin = 18, rend = 56 + 1
-                            for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
-                                sub_cycle.push_back(*it);
-                            }
-                            cycle[pointStack.back()] = sub_cycle;
-                            result[sub_cycle.size() - 3].push_back(cycle);
-                            ++len;
+//                if (marked.count(adjacent) == 0) {
+                if (adjacent == start) {
+                    if (pointStack.size() > 2 && pointStack.size() < 8) {
+                        map<unsigned int, vector<unsigned int>> cycle;
+                        vector<unsigned int> sub_cycle;
+                        //now pointStack is begin: 56 197 18 endx
+                        //rbegin = 18, rend = 56 + 1
+                        for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
+                            sub_cycle.push_back(*it);
                         }
-                    } else if (markedSet.count(adjacent) == 0) {
-                        hasCycle = findAllSimpleCycles(start, adjacent, depth + 1) || hasCycle;
+                        cycle[pointStack.back()] = sub_cycle;
+                        result[sub_cycle.size() - 3].push_back(cycle);
+                        ++len;
                     }
+                } else if (depth < 7 && visited.count(adjacent) == 0 && adjacent > start) {
+                    findAllSimpleCycles(start, adjacent, depth + 1);
                 }
+//                }
             }
-
         }
-        if (hasCycle) {
-            while (markedStack.front() != current) {
-                unsigned int v = markedStack.front();
-                markedStack.pop_front();
-                markedSet.erase(v);
-            }
-            unsigned int v = markedStack.front();
-            markedStack.pop_front();
-            markedSet.erase(v);
-        }
+        visited.erase(current);
         pointStack.pop_front();
-        return hasCycle;
     }
 
     void test_graph() {
@@ -129,9 +116,10 @@ public:
     }
 
 private:
-    set<unsigned int> visited, markedSet;
-    deque<unsigned int> pointStack, markedStack;
+    set<unsigned int> visited, marked;
+    deque<unsigned int> pointStack;
     map<unsigned int, list<pair<unsigned int, int>>> graph;
+    map<unsigned int, list<pair<unsigned int, int>>>::iterator end;
     vector<vector<map<unsigned int, vector<unsigned int>>>> result;
     int len;
 };
@@ -152,3 +140,4 @@ int main() {
     printf("%f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
     return 0;
 }
+
