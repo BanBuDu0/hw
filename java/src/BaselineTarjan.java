@@ -152,7 +152,7 @@ public class BaselineTarjan {
     public List<List<Vertex>> findAllSimpleCycles(Graph graph) {
         List<List<Vertex>> result = new ArrayList<>();
         for (Vertex vertex : graph.getAllVertex()) {
-            findAllSimpleCycles(vertex, vertex, result);
+            findAllSimpleCycles(vertex, vertex, result, 0);
             visited.add(vertex);
             while (!markedStack.isEmpty()) {
                 markedSet.remove(markedStack.pollFirst());
@@ -161,7 +161,7 @@ public class BaselineTarjan {
         return result;
     }
 
-    private boolean findAllSimpleCycles(Vertex start, Vertex current, List<List<Vertex>> result) {
+    private boolean findAllSimpleCycles(Vertex start, Vertex current, List<List<Vertex>> result, int depth) {
         boolean hasCycle = false;
         pointStack.offerFirst(current);
         markedSet.add(current);
@@ -180,7 +180,7 @@ public class BaselineTarjan {
                         result.add(cycle);
                     }
                 } else if (!markedSet.contains(w)) {
-                    hasCycle = findAllSimpleCycles(start, w, result) || hasCycle;
+                    hasCycle = findAllSimpleCycles(start, w, result, depth + 1) || hasCycle;
                 }
             }
         }
@@ -228,7 +228,7 @@ public class BaselineTarjan {
         System.out.println(result.size());
         long endTime = System.currentTimeMillis();
         System.out.println(endTime - startTime + "ms");
-//
+
 //        for(Vertex v: graph.getAllVertex()){
 //            System.out.print("vertex: " + v.getId() + " ");
 //            for(Vertex j: v.getAdjacentVertexes()){

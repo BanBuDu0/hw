@@ -183,7 +183,7 @@ public class TarjanMultiThread {
 
     public List<List<Vertex>> findAllSimpleCycles(Graph graph) {
         reset(graph.getAllVertex().size());
-        ExecutorService executor = Executors.newFixedThreadPool(graph.getAllVertex().size());
+        ExecutorService executor = Executors.newFixedThreadPool(4);
         List<Vertex> vertices = graph.getAllVertex();
         for (int i = 0; i < vertices.size(); ++i) {
             Vertex vertex = vertices.get(i);
@@ -196,7 +196,7 @@ public class TarjanMultiThread {
             Set<Vertex> markedSet = markedSets.get(i);
             List<List<Vertex>> result = results.get(i);
             executor.submit(() -> {
-                    System.out.println(Thread.currentThread().getId() + " " + Thread.currentThread().getName());
+//                    System.out.println(Thread.currentThread().getId() + " " + Thread.currentThread().getName());
                 findAllSimpleCycles(vertex, vertex, result, visited, pointStack, markedStack, markedSet);
                 visited.add(vertex);
                 while (!markedStack.isEmpty()) {
