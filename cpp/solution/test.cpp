@@ -1,6 +1,5 @@
 //
 // Created by Sunyu on 2020/4/6.
-// 指定了递归调用的深度最大为7层，同时优化了一些递归时图查找
 //
 
 #include <iostream>
@@ -38,9 +37,9 @@ public:
         int i = 0;
         int size = graph.size();
         for (auto &it : graph) {
-//            if (i % 100 == 0) {
+            if (i % 100 == 0) {
                 printf("%d/%d\n", i++, size);
-//            }
+            }
             unsigned int vertex = it.first;
             findAllSimpleCycles(vertex, vertex, 0);
 //            marked.insert(vertex);
@@ -55,24 +54,41 @@ public:
         auto adjacent_list = graph.find(current);
         if (adjacent_list != end) {
             for (auto &p : adjacent_list->second) {
-                unsigned int adjacent = p.first;
-//                if (marked.count(adjacent) == 0) {
-                if (adjacent == start) {
-                    if (pointStack.size() > 2 && pointStack.size() < 8) {
-                        map<unsigned int, vector<unsigned int>> cycle;
-                        vector<unsigned int> sub_cycle;
-                        //now pointStack is begin: 56 197 18 endx
-                        //rbegin = 18, rend = 56 + 1
-                        for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
-                            sub_cycle.push_back(*it);
+                if (depth >= 6) {
+                    if (p.first == start) {
+                        if (pointStack.size() > 2 && pointStack.size() < 8) {
+                            map<unsigned int, vector<unsigned int>> cycle;
+                            vector<unsigned int> sub_cycle;
+                            //now pointStack is begin: 56 197 18 endx
+                            //rbegin = 18, rend = 56 + 1
+                            for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
+                                sub_cycle.push_back(*it);
+                            }
+                            cycle[pointStack.back()] = sub_cycle;
+                            result[sub_cycle.size() - 3].push_back(cycle);
+                            ++len;
                         }
-                        cycle[pointStack.back()] = sub_cycle;
-                        result[sub_cycle.size() - 3].push_back(cycle);
-                        ++len;
                     }
-                } else if (depth < 7 && visited.count(adjacent) == 0 && adjacent > start) {
-                    findAllSimpleCycles(start, adjacent, depth + 1);
+                } else {
+                    unsigned int adjacent = p.first;
+                    if (adjacent == start) {
+                        if (pointStack.size() > 2 && pointStack.size() < 8) {
+                            map<unsigned int, vector<unsigned int>> cycle;
+                            vector<unsigned int> sub_cycle;
+                            //now pointStack is begin: 56 197 18 endx
+                            //rbegin = 18, rend = 56 + 1
+                            for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
+                                sub_cycle.push_back(*it);
+                            }
+                            cycle[pointStack.back()] = sub_cycle;
+                            result[sub_cycle.size() - 3].push_back(cycle);
+                            ++len;
+                        }
+                    } else if (visited.count(adjacent) == 0 && adjacent > start) {
+                        findAllSimpleCycles(start, adjacent, depth + 1);
+                    }
                 }
+
 //                }
             }
         }
@@ -126,7 +142,7 @@ private:
 int main() {
     clock_t start, finish;
     start = clock();
-    string data_path = R"(D:\hw\data\test_data2.txt)";
+    string data_path = R"(D:\hw\data\test_data.txt)";
     string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
     string huawei_path = R"(/root/hw/data/test_data.txt)";
 
