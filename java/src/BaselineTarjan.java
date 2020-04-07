@@ -168,20 +168,20 @@ public class BaselineTarjan {
         markedStack.offerFirst(current);
 
         for (Vertex w : current.getAdjacentVertexes()) {
-            if (!visited.contains(w)) {
-                if (w.equals(start)) {
-                    hasCycle = true;
-                    if (pointStack.size() > 2 && pointStack.size() < 8) {
-                        List<Vertex> cycle = new ArrayList<>();
-                        Iterator<Vertex> itr = pointStack.descendingIterator();
-                        while (itr.hasNext()) {
-                            cycle.add(itr.next());
-                        }
-                        result.add(cycle);
+            if (visited.contains(w)) {
+                continue;
+            } else if (w.equals(start)) {
+                hasCycle = true;
+                if (pointStack.size() > 2 && pointStack.size() < 8) {
+                    List<Vertex> cycle = new ArrayList<>();
+                    Iterator<Vertex> itr = pointStack.descendingIterator();
+                    while (itr.hasNext()) {
+                        cycle.add(itr.next());
                     }
-                } else if (!markedSet.contains(w)) {
-                    hasCycle = findAllSimpleCycles(start, w, result, depth + 1) || hasCycle;
+                    result.add(cycle);
                 }
+            } else if (!markedSet.contains(w)) {
+                hasCycle = findAllSimpleCycles(start, w, result, depth + 1) || hasCycle;
             }
         }
 
@@ -214,7 +214,7 @@ public class BaselineTarjan {
     }
 
     public static void main(String[] args) {
-        String linux_path = "/home/syj/Documents/hw/data/test_data.txt";
+        String linux_path = "/home/syj/Documents/hw/data/test_data2.txt";
         String data_path = "D:\\code\\leecode\\src\\com\\huawei\\data\\test_data.txt";
         BaselineTarjan baseline = new BaselineTarjan();
         Graph graph = baseline.generate_data(data_path);

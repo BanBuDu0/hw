@@ -4,6 +4,7 @@ project(solution)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(solution
-#        solution.cpp
-#         update_v1.cpp
-        test.cpp)
+#        tarjan_baseline.cpp
+        test.cpp
+#        update_v1.cpp
+        )
