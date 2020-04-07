@@ -338,7 +338,7 @@ public class Scc {
 
     public static void main(String args[]) {
         long startTime = System.currentTimeMillis();
-        String data_path = "D:\\hw\\data\\test_data2.txt";
+        String data_path = "D:\\hw\\data\\test_data1.txt";
         Scc tarjanStronglyConnectedComponent = new Scc();
         Graph<Integer> graph = tarjanStronglyConnectedComponent.generate_data(data_path);
 //

@@ -388,7 +388,7 @@ public class Johnson {
     }
 
     public static void main(String[] args) {
-        String data_path = "D:\\hw\\data\\test_data.txt";
+        String data_path = "D:\\hw\\data\\test_data2.txt";
         Johnson johnson = new Johnson();
         Graph graph = johnson.generate_data(data_path);
 
