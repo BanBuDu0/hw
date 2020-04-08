@@ -13,6 +13,8 @@
 #include <unordered_map>
 #include <algorithm>
 
+#pragma comment(linker, "/STACK:10000000")
+
 using namespace std;
 
 bool cmp(vector<unsigned int> a, vector<unsigned int> b) {
@@ -174,8 +176,8 @@ public:
     }
 
 
-    void output() {
-        ofstream outfile("out.txt", ios::trunc);
+    void output(string &path) {
+        ofstream outfile(path, ios::trunc);
         vector<vector<unsigned int>> all_res;
         outfile << result.size() << endl;
         sort(result.begin(), result.end(), cmp);
@@ -210,36 +212,38 @@ private:
 };
 
 int main() {
-    clock_t start, finish;
-    start = clock();
-    string data_path = R"(D:\hw\data\test_data.txt)";
-    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
-    string huawei_path = R"(/root/hw/data/test_data.txt)";
+//    clock_t start, finish;
+//    start = clock();
+//    string data_path = R"(D:\hw\data\test_data.txt)";
+//    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
+//    string huawei_path = R"(/root/hw/data/test_data.txt)";
+    string iPath = "/data/test_data.txt";
+    string oPath = "/projects/student/result.txt";
 
     //生成数据
     FindCycleSolution solution;
-    solution.generate_graph(data_path);
-    finish = clock();
-    printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-    start = clock();
+    solution.generate_graph(iPath);
+//    finish = clock();
+//    printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+//    start = clock();
 
     //split scc
     solution.scc();
     solution.generate_sub_graph();
-    finish = clock();
-    printf("splic scc: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-    start = clock();
+//    finish = clock();
+//    printf("splic scc: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+//    start = clock();
 
     //find cycle
     solution.findCyclesInScc();
-    finish = clock();
-    printf("findCycles: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-    start = clock();
+//    finish = clock();
+//    printf("findCycles: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+//    start = clock();
 
     //output
-    solution.output();
-    finish = clock();
-    printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+    solution.output(oPath);
+//    finish = clock();
+//    printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
 
     return 0;
 }
