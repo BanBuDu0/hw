@@ -1,12 +1,14 @@
 //
-// Created by Sunyu on 2020/4/6.
+// Created by syj on 2020/4/8.
+// 优化了，搜索时如果顶点不在子图就不搜索该点
+// scc的时候不生成子图，直接在子顶点上做
+// 暂时去掉了边上的weight
 //
 #include <iostream>
 #include <list>
 #include <vector>
 #include <string>
 #include <fstream>
-#include <map>
 #include <set>
 #include <ctime>
 #include <deque>
@@ -32,7 +34,6 @@ bool cmp(vector<unsigned int> a, vector<unsigned int> b) {
     return a.size() < b.size();
 }
 
-
 class FindCycleSolution {
 public:
     FindCycleSolution() {
@@ -45,9 +46,7 @@ public:
         FILE *file = fopen(file_path.c_str(), "r");
         unsigned int from, to, weight;
         while (fscanf(file, "%u,%u,%u", &from, &to, &weight) != EOF) {
-            graph[from].push_back(make_pair(to, weight));
-            all_vertex.insert(from);
-            all_vertex.insert(to);
+            graph[from].push_back(to);
         }
     }
 
@@ -69,8 +68,7 @@ public:
         stack.push_front(vertex);
         onStack.insert(vertex);
 
-        for (auto &p : graph[vertex]) {
-            unsigned int adjacent = p.first;
+        for (auto &adjacent : graph[vertex]) {
             if (scc_visited.count(adjacent) == 0) {
                 sccUtil(adjacent);
                 if (lowTime[adjacent] < lowTime[vertex]) {
@@ -84,22 +82,22 @@ public:
         }
 
         if (visitedTime[vertex] == lowTime[vertex]) {
-            set<unsigned int> stronglyConnectedComponenet;
+            set<unsigned int> stronglyConnectedComponent;
             unsigned int v;
             do {
                 v = stack.front();
                 stack.pop_front();
                 onStack.erase(v);
-                stronglyConnectedComponenet.insert(v);
+                stronglyConnectedComponent.insert(v);
             } while (vertex != v);
-            if (stronglyConnectedComponenet.size() > 2) {
-                scc_result.push_back(stronglyConnectedComponenet);
+            if (stronglyConnectedComponent.size() > 2) {
+                scc_vertexes.push_back(stronglyConnectedComponent);
             }
         }
     }
 
     void print_scc() {
-        for (auto &s:scc_result) {
+        for (auto &s:scc_vertexes) {
             if (s.size() > 2) {
                 for (auto &v:s) {
                     printf("%u ", v);
@@ -109,39 +107,23 @@ public:
         }
     }
 
-    void generate_sub_graph() {
-        for (auto &sub_vertex : scc_result) {
-            unordered_map<unsigned int, list<pair<unsigned int, int>>> temp_graph;
-            for (auto &vertex : sub_vertex) {
-                temp_graph[vertex] = graph[vertex];
-            }
-            subGraphs.push_back(temp_graph);
-        }
-    }
-
     void test_graph() {
-        for (auto &g : subGraphs) {
+        for (auto &g : scc_vertexes) {
             cout << "graph-----------------------------------------" << endl;
             for (auto &it : g) {
-                unsigned int key = it.first;
-                list<pair<unsigned int, int>> temp = it.second;
-                cout << "vex: " << key << " ";
-                for (auto &l : temp) {
-                    cout << "a " << l.first << " " << "w " << l.second << " ";
-                }
-                cout << endl;
+                cout << it << " ";
             }
+            cout << endl;
         }
     }
 
     void findCyclesInScc() {
         int i = 0;
-        for (auto &scc_vertex: scc_result) {
+        for (auto &scc_vertex: scc_vertexes) {
             int j = 0;
             for (auto &vertex: scc_vertex) {
                 if (j < (scc_vertex.size() - 2)) {
                     findAllSimpleCycles(vertex, vertex, 0, i);
-//                marked.insert(vertex);
                 }
                 ++j;
             }
@@ -154,10 +136,9 @@ public:
         pointStack.push_front(current);
         visited.insert(current);
 
-        for (auto &p : subGraphs[subGraph_index][current]) {
+        for (auto &adjacent : graph[current]) {
             //when depth=6, there 7 points in the pointStack
             //so just take care about the adjacent is start or not
-            unsigned int adjacent = p.first;
             if (adjacent == start) {
                 if (pointStack.size() > 2 && pointStack.size() < 8) {
                     string temp;
@@ -167,10 +148,12 @@ public:
                     }
                     result.push_back(cycle);
                 }
-            } else if (visited.count(adjacent) == 0 && depth < 6 && adjacent > start) {
+            } else if (visited.count(adjacent) == 0 && depth < 6 && adjacent > start &&
+                       scc_vertexes[subGraph_index].count(adjacent) != 0) {
                 findAllSimpleCycles(start, adjacent, depth + 1, subGraph_index);
             }
         }
+
         visited.erase(current);
         pointStack.pop_front();
     }
@@ -200,50 +183,48 @@ private:
     set<unsigned int> onStack;
     deque<unsigned int> stack;
     set<unsigned int> scc_visited;
-    vector<set<unsigned int>> scc_result;
+    vector<set<unsigned int>> scc_vertexes;
     int time;
 
     set<unsigned int> visited;
     deque<unsigned int> pointStack;
-    set<unsigned int> all_vertex;
-    unordered_map<unsigned int, list<pair<unsigned int, int>>> graph;
-    vector<unordered_map<unsigned int, list<pair<unsigned int, int>>>> subGraphs;
+    unordered_map<unsigned int, list<unsigned int>> graph;
     vector<vector<unsigned int>> result;
 };
 
 int main() {
-//    clock_t start, finish;
-//    start = clock();
-//    string data_path = R"(D:\hw\data\test_data.txt)";
-//    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
-//    string huawei_path = R"(/root/hw/data/test_data.txt)";
+    clock_t start, finish;
+    start = clock();
+    string data_path = R"(D:\hw\data\test_data2.txt)";
+    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
+    string huawei_path = R"(/root/hw/data/test_data.txt)";
     string iPath = "/data/test_data.txt";
     string oPath = "/projects/student/result.txt";
+    string o = "result.txt";
 
     //生成数据
     FindCycleSolution solution;
-    solution.generate_graph(iPath);
-//    finish = clock();
-//    printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-//    start = clock();
+    solution.generate_graph(data_path);
+    finish = clock();
+    printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+    start = clock();
 
     //split scc
     solution.scc();
-    solution.generate_sub_graph();
-//    finish = clock();
-//    printf("splic scc: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-//    start = clock();
+    finish = clock();
+    printf("splic scc: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+    start = clock();
 
     //find cycle
     solution.findCyclesInScc();
-//    finish = clock();
-//    printf("findCycles: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-//    start = clock();
+    finish = clock();
+    printf("findCycles: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+    start = clock();
 
     //output
-    solution.output(oPath);
-//    finish = clock();
-//    printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+    solution.output(o);
+    finish = clock();
+    printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
 
     return 0;
 }
