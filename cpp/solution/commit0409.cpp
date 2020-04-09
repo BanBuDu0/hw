@@ -19,6 +19,7 @@
 
 using namespace std;
 
+
 bool cmp(vector<unsigned int> a, vector<unsigned int> b) {
     if (a.size() == b.size()) {
         for (int i = 0; i < a.size(); i++) {
@@ -32,6 +33,10 @@ bool cmp(vector<unsigned int> a, vector<unsigned int> b) {
         return a.size() < b.size();
     }
     return a.size() < b.size();
+}
+
+void ccc() {
+    cout << "a";
 }
 
 class FindCycleSolution {
@@ -188,14 +193,14 @@ private:
 
     set<unsigned int> visited;
     deque<unsigned int> pointStack;
-    unordered_map<unsigned int, list<unsigned int>> graph;
+    unordered_map<unsigned int, list < unsigned int>> graph;
     vector<vector<unsigned int>> result;
 };
 
 int main() {
     clock_t start, finish;
     start = clock();
-    string data_path = R"(D:\hw\data\test_data2.txt)";
+    string data_path = R"(D:\hw\data\test_data.txt)";
     string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
     string huawei_path = R"(/root/hw/data/test_data.txt)";
     string iPath = "/data/test_data.txt";
