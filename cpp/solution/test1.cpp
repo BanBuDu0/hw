@@ -63,11 +63,27 @@ public:
         int f, t;
         graph.resize(total_vertex);
         reverse_graph.resize(total_vertex);
+        reverse_graph2.resize(total_vertex);
 
         for (auto &pair : input_pair) {
             f = vertex_hash[pair.first], t = vertex_hash[pair.second];
             graph[f].push_back(t);
             reverse_graph[t].push_back(f);
+        }
+    }
+
+    //能和scc并行
+    void generate_reverse() {
+        for (int i = 0; i < total_vertex; ++i) {
+            unordered_map<int, vector<int>> temp;
+            // j is adj of i
+            for (auto &j : reverse_graph[i]) {
+                vector<int> j_adj = reverse_graph[j];
+                for (auto &k : j_adj) {
+                    temp[k].push_back(j);
+                }
+            }
+            reverse_graph2[i] = temp;
         }
     }
 
@@ -118,12 +134,11 @@ public:
         }
     }
 
-
     void cutGraph() {
         for (auto &i : scc_result) {
             for (auto &vertex : i) {
                 vector<int> temp_adj;
-                for (auto &adj:graph[vertex]) {
+                for (auto &adj : graph[vertex]) {
                     if (i.count(adj) != 0) {
                         temp_adj.push_back(adj);
                     }
@@ -156,17 +171,34 @@ public:
                     result.push_back(cycle);
                 }
             } else if (visited[adjacent] == false && adjacent > start) {
-                if (depth < 5) {
+                if (depth < 4) {
                     findAllSimpleCycles(start, adjacent, depth + 1);
-                } else if (depth == 5) {
+                } else if (depth == 4) {
+                    //判断adjacent是不是倒数第三个点
+                    for (pair<int, vector<int>> m : reverse_graph2[start]) {
+                        int third_vertex = m.first;
+                        if (third_vertex == adjacent) {
+                            for (auto &v : m.second) {
+                                if (v > start && visited[v] == false) {
+                                    vector<unsigned int> cycle;
+                                    for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
+                                        cycle.push_back(vertex_set[*it]);
+                                    }
+                                    cycle.push_back(vertex_set[third_vertex]);
+                                    cycle.push_back(vertex_set[v]);
+                                    result.push_back(cycle);
+                                }
+                            }
+                        }
+                    }
+                    //判断adjacent是不是倒数第二个点
                     for (auto &v : reverse_graph[start]) {
                         if (v == adjacent) {
-                            string temp;
                             vector<unsigned int> cycle;
                             for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
                                 cycle.push_back(vertex_set[*it]);
                             }
-                            cycle.push_back(adjacent);
+                            cycle.push_back(vertex_set[adjacent]);
                             result.push_back(cycle);
                         }
                     }
@@ -211,6 +243,7 @@ private:
     vector<unsigned int> vertex_set;
     unordered_map<unsigned int, int> vertex_hash;
     vector<vector<int>> graph, reverse_graph;
+    vector<unordered_map<int, vector<int>>> reverse_graph2;
     int total_vertex;
 };
 
@@ -230,6 +263,10 @@ int main() {
     finish = clock();
     printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
     start = clock();
+    solution.generate_reverse();
+    finish = clock();
+    printf("reverse search: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+    start = clock();
 
     //split scc
     solution.scc();
@@ -248,6 +285,6 @@ int main() {
     solution.output(o);
     finish = clock();
     printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-//    system("pause");
+    //    system("pause");
     return 0;
 }
