@@ -1,8 +1,9 @@
 //
 // Created by syj on 2020/4/8.
-// 优化了，搜索时如果顶点不在子图就不搜索该点
 // scc的时候不生成子图，直接在子顶点上做
 // 暂时去掉了边上的weight
+// 结果变差了
+// 28.5289
 //
 #include <iostream>
 #include <list>

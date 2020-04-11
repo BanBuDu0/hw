@@ -46,7 +46,15 @@ Johnson算法数据跑不对啊，不知道是不是我写错了
 
 ### 0409
 
+优化了，搜索时如果顶点不在子图就不搜索该点  
+scc的时候不生成子图，直接在子顶点上做  
+暂时去掉了边上的weight  
+然后性能变差了。。。  
 可以尝试把push_back换成emplace_back，把insert换成emplace
+
+### 0410
+
+发现unorded_map比set查找快一倍，vector比unorded_map又快很多
 
 ## 想法
 
