@@ -9,7 +9,6 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include <map>
 #include <set>
 #include <ctime>
 #include <deque>
@@ -59,7 +58,6 @@ public:
         for (auto &vertex : vertex_set) {
             vertex_hash[vertex] = total_vertex++;
         }
-
         int f, t;
         graph.resize(total_vertex);
         reverse_graph.resize(total_vertex);
@@ -135,14 +133,11 @@ public:
 
     void findCyclesInScc() {
         visited.resize(total_vertex);
-        // for (auto &i : scc_result) {
-        //     for (auto &vertex : i) {
-        //         findAllSimpleCycles(vertex, vertex, 0);
-        //     }
-        // }
-        for(int i = 0; i < total_vertex; ++i){
-            findAllSimpleCycles(i, i, 0);
-        }
+         for (auto &i : scc_result) {
+             for (auto &vertex : i) {
+                 findAllSimpleCycles(vertex, vertex, 0);
+             }
+         }
     }
 
     void findAllSimpleCycles(int start, int current, int depth) {
@@ -235,8 +230,8 @@ int main() {
     start = clock();
 
     //split scc
-    // solution.scc();
-    // solution.cutGraph();
+     solution.scc();
+     solution.cutGraph();
     finish = clock();
     printf("splic scc: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
     start = clock();
