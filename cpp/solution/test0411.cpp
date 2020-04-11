@@ -1,8 +1,6 @@
 //
 // Created by syj on 2020/4/11.
-// 修改了图的存储结构
-// 在commit0411的基础上
-// 10.36不判断临边在不在子图中，在递归的时候要少做判断
+// 保存最后三个点，负优化。。。
 //
 #include <iostream>
 #include <list>
@@ -174,23 +172,7 @@ public:
                 if (depth < 4) {
                     findAllSimpleCycles(start, adjacent, depth + 1);
                 } else if (depth == 4) {
-                    //判断adjacent是不是倒数第三个点
-                    for (pair<int, vector<int>> m : reverse_graph2[start]) {
-                        int third_vertex = m.first;
-                        if (third_vertex == adjacent) {
-                            for (auto &v : m.second) {
-                                if (v > start && visited[v] == false) {
-                                    vector<unsigned int> cycle;
-                                    for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
-                                        cycle.push_back(vertex_set[*it]);
-                                    }
-                                    cycle.push_back(vertex_set[third_vertex]);
-                                    cycle.push_back(vertex_set[v]);
-                                    result.push_back(cycle);
-                                }
-                            }
-                        }
-                    }
+                    bool isSecond = false;
                     //判断adjacent是不是倒数第二个点
                     for (auto &v : reverse_graph[start]) {
                         if (v == adjacent) {
@@ -200,6 +182,26 @@ public:
                             }
                             cycle.push_back(vertex_set[adjacent]);
                             result.push_back(cycle);
+                            isSecond = true;
+                        }
+                    }
+                    if (!isSecond) {
+                        //判断adjacent是不是倒数第三个点
+                        for (pair<int, vector<int>> m : reverse_graph2[start]) {
+                            int third_vertex = m.first;
+                            if (third_vertex == adjacent) {
+                                for (auto &v : m.second) {
+                                    if (v > start && visited[v] == false) {
+                                        vector<unsigned int> cycle;
+                                        for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
+                                            cycle.push_back(vertex_set[*it]);
+                                        }
+                                        cycle.push_back(vertex_set[third_vertex]);
+                                        cycle.push_back(vertex_set[v]);
+                                        result.push_back(cycle);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -250,7 +252,7 @@ private:
 int main() {
     clock_t start, finish;
     start = clock();
-    string data_path = R"(D:\hw\data\test_data.txt)";
+    string data_path = R"(D:\hw\data\test_data1.txt)";
     string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
     string huawei_path = R"(/root/hw/data/test_data.txt)";
     string iPath = "/data/test_data.txt";
