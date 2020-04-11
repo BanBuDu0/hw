@@ -135,10 +135,13 @@ public:
 
     void findCyclesInScc() {
         visited.resize(total_vertex);
-        for (auto &i : scc_result) {
-            for (auto &vertex : i) {
-                findAllSimpleCycles(vertex, vertex, 0);
-            }
+        // for (auto &i : scc_result) {
+        //     for (auto &vertex : i) {
+        //         findAllSimpleCycles(vertex, vertex, 0);
+        //     }
+        // }
+        for(int i = 0; i < total_vertex; ++i){
+            findAllSimpleCycles(i, i, 0);
         }
     }
 
@@ -222,7 +225,7 @@ int main() {
     string huawei_path = R"(/root/hw/data/test_data.txt)";
     string iPath = "/data/test_data.txt";
     string oPath = "/projects/student/result.txt";
-    string o = "result.txt";
+    string o = "result1.txt";
 
     //生成数据
     FindCycleSolution solution;
@@ -232,8 +235,8 @@ int main() {
     start = clock();
 
     //split scc
-    solution.scc();
-    solution.cutGraph();
+    // solution.scc();
+    // solution.cutGraph();
     finish = clock();
     printf("splic scc: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
     start = clock();
