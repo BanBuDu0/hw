@@ -13,6 +13,7 @@
 #include <deque>
 #include <unordered_map>
 #include <algorithm>
+#include <thread>
 
 #pragma comment(linker, "/STACK:10000000")
 
@@ -39,9 +40,9 @@ class FindCycleSolution {
 public:
     FindCycleSolution() {
         time = 0;
+        total_subGraph = 0;
         total_vertex = 0;
-        result.resize(5);
-        cycle_num = 0;
+        cycle_num1 = 0, cycle_num2 = 0;
     }
 
     ~FindCycleSolution() = default;
@@ -52,27 +53,35 @@ public:
         vector<pair<unsigned int, unsigned int>> input_pair;
         while (fscanf(file, "%u,%u,%u", &from, &to, &weight) != EOF) {
             input_pair.emplace_back(from, to);
-            vertex_set.push_back(to);
-            vertex_set.push_back(from);
+            vertex_set1.push_back(to);
+            vertex_set1.push_back(from);
         }
-        sort(vertex_set.begin(), vertex_set.end());
-        vertex_set.erase(unique(vertex_set.begin(), vertex_set.end()), vertex_set.end());
+        sort(vertex_set1.begin(), vertex_set1.end());
+        vertex_set1.erase(unique(vertex_set1.begin(), vertex_set1.end()), vertex_set1.end());
 
-        for (auto &vertex : vertex_set) {
+        for (auto &vertex : vertex_set1) {
             vertex_hash[vertex] = total_vertex++;
         }
 
+        vertex_set2.resize(total_vertex);
+        copy(vertex_set1.begin(), vertex_set1.end(), vertex_set2.begin());
+
         int f, t;
-        graph.resize(total_vertex);
-        reverse_graph.resize(total_vertex);
+        graph1.resize(total_vertex);
+        graph2.resize(total_vertex);
+        reverse_graph1.resize(total_vertex);
+        reverse_graph2.resize(total_vertex);
         for (int i = 0; i < total_vertex; i++) {
-            reverse_graph[i].resize(total_vertex, false);
+            reverse_graph1[i].resize(total_vertex, false);
+            reverse_graph2[i].resize(total_vertex, false);
         }
 
         for (auto &pair : input_pair) {
             f = vertex_hash[pair.first], t = vertex_hash[pair.second];
-            graph[f].push_back(t);
-            reverse_graph[t][f] = true;
+            graph1[f].push_back(t);
+            graph2[f].push_back(t);
+            reverse_graph1[t][f] = true;
+            reverse_graph2[t][f] = true;
         }
     }
 
@@ -88,15 +97,39 @@ public:
     }
 
     void cutGraph() {
-        for (auto &i : scc_result) {
+        for (auto &i : scc_result1) {
             for (auto &vertex : i) {
                 vector<int> temp_adj;
-                for (auto &adj : graph[vertex]) {
+                for (auto &adj : graph1[vertex]) {
                     if (i.count(adj) != 0) {
                         temp_adj.push_back(adj);
                     }
                 }
-                graph[vertex] = temp_adj;
+                graph1[vertex] = temp_adj;
+                for (auto &adj : graph2[vertex]) {
+                    if (i.count(adj) != 0) {
+                        temp_adj.push_back(adj);
+                    }
+                }
+                graph2[vertex] = temp_adj;
+            }
+        }
+        for (auto &i : scc_result2) {
+            for (auto &vertex : i) {
+                vector<int> temp_adj;
+                for (auto &adj : graph1[vertex]) {
+                    if (i.count(adj) != 0) {
+                        temp_adj.push_back(adj);
+                    }
+                }
+
+                graph1[vertex] = temp_adj;
+                for (auto &adj : graph2[vertex]) {
+                    if (i.count(adj) != 0) {
+                        temp_adj.push_back(adj);
+                    }
+                }
+                graph2[vertex] = temp_adj;
             }
         }
     }
@@ -109,7 +142,7 @@ public:
         stack.emplace_front(vertex);
         onStack[vertex] = true;
 
-        for (auto &adjacent : graph[vertex]) {
+        for (auto &adjacent : graph1[vertex]) {
             if (scc_visited[adjacent] == false) {
                 sccUtil(adjacent);
                 if (lowTime[adjacent] < lowTime[vertex]) {
@@ -132,80 +165,119 @@ public:
                 stronglyConnectedComponent.insert(v);
             } while (vertex != v);
             if (stronglyConnectedComponent.size() > 2) {
-                scc_result.emplace_back(stronglyConnectedComponent);
+                if (total_subGraph % 2 == 0) {
+                    scc_result1.emplace_back(stronglyConnectedComponent);
+                } else {
+                    scc_result2.emplace_back(stronglyConnectedComponent);
+                }
+                total_subGraph++;
             }
         }
     }
 
-    void findCyclesInScc() {
-        visited.resize(total_vertex);
-        for (auto &i : scc_result) {
-            for (auto &vertex : i) {
-                findAllSimpleCycles(vertex, vertex, 0);
-                marked.clear();
-                visited = vector<bool>(total_vertex, false);
+    void findCycles() {
+        thread thread1(&FindCycleSolution::findCycleInSccThread1, this);
+        thread thread2(&FindCycleSolution::findCycleInSccThread2, this);
+        thread1.join();
+        thread1.join();
+    }
+
+    void findCycleInSccThread1() {
+        for (auto &sub : scc_result1) {
+            for (auto &vertex : sub) {
+                findAllSimpleCycles1(vertex, vertex, 0);
             }
         }
     }
 
-    int findAllSimpleCycles(int start, int current, int depth) {
-        int retire = 0;
-        pointStack.push_front(current);
-        visited[current] = true;
-        marked.push_front(current);
+    void findCycleInSccThread2() {
+        for (auto &sub : scc_result2) {
+            for (auto &vertex : sub) {
+                findAllSimpleCycles2(vertex, vertex, 0);
+            }
+        }
+    }
 
-        for (auto &adjacent : graph[current]) {
+    void findAllSimpleCycles1(int start, int current, int depth) {
+        pointStack1.push_front(current);
+        visited1[current] = true;
+
+        for (auto &adjacent : graph1[current]) {
             if (adjacent == start) {
                 if (depth > 1) {
                     vector<unsigned int> cycle = vector<unsigned int>(depth + 1);
                     int i = 0;
-                    for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
-                        cycle[i] = vertex_set[*it];
+                    for (auto it = pointStack1.rbegin(); it != pointStack1.rend(); ++it) {
+                        cycle[i] = vertex_set1[*it];
                         ++i;
                     }
-                    result[depth - 2].push_back(cycle);
-                    ++cycle_num;
-                    retire = 1;
+                    result1[depth - 2].push_back(cycle);
+                    cycle_num1++;
                 }
-            } else if (visited[adjacent] == false && adjacent > start) {
+            } else if (visited1[adjacent] == false && adjacent > start) {
                 if (depth < 5) {
-                    retire = findAllSimpleCycles(start, adjacent, depth + 1);
+                    findAllSimpleCycles1(start, adjacent, depth + 1);
                 } else if (depth == 5) {
-                    retire = 2;
-                    if (reverse_graph[start][adjacent]) {
+                    if (reverse_graph1[start][adjacent]) {
                         vector<unsigned int> cycle = vector<unsigned int>(depth + 2);
                         int i = 0;
-                        for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
-                            cycle[i] = vertex_set[*it];
+                        for (auto it = pointStack1.rbegin(); it != pointStack1.rend(); ++it) {
+                            cycle[i] = vertex_set1[*it];
                             ++i;
                         }
                         cycle[i] = adjacent;
-                        result[depth - 1].push_back(cycle);
-                        ++cycle_num;
-                        retire = 1;
+                        result1[depth - 1].push_back(cycle);
+                        cycle_num1++;
                     }
                 }
             }
         }
+        visited1[current] = false;
+        pointStack1.pop_front();
+    }
 
-        if (retire != 0) {
-            while (marked.front() != current) {
-                int v = marked.front();
-                marked.pop_front();
-                visited[v] = false;
+    void findAllSimpleCycles2(int start, int current, int depth) {
+        pointStack2.push_front(current);
+        visited2[current] = true;
+
+        for (auto &adjacent : graph2[current]) {
+            if (adjacent == start) {
+                if (depth > 1) {
+                    vector<unsigned int> cycle = vector<unsigned int>(depth + 1);
+                    int i = 0;
+                    for (auto it = pointStack2.rbegin(); it != pointStack2.rend(); ++it) {
+                        cycle[i] = vertex_set2[*it];
+                        ++i;
+                    }
+                    result2[depth - 2].push_back(cycle);
+                    cycle_num2++;
+                }
+            } else if (visited2[adjacent] == false && adjacent > start) {
+                if (depth < 5) {
+                    findAllSimpleCycles2(start, adjacent, depth + 1);
+                } else if (depth == 5) {
+                    if (reverse_graph2[start][adjacent]) {
+                        vector<unsigned int> cycle = vector<unsigned int>(depth + 2);
+                        int i = 0;
+                        for (auto it = pointStack2.rbegin(); it != pointStack2.rend(); ++it) {
+                            cycle[i] = vertex_set2[*it];
+                            ++i;
+                        }
+                        cycle[i] = adjacent;
+                        result2[depth - 1].push_back(cycle);
+                        cycle_num2++;
+                    }
+                }
             }
-            int v = marked.front();
-            marked.pop_front();
-            visited[v] = false;
         }
-        pointStack.pop_front();
-        return retire;
+        visited2[current] = false;
+        pointStack2.pop_front();
     }
 
     void output(string &path) {
         FILE *file = fopen(path.c_str(), "w");
-        fprintf(file, "%d\n", cycle_num);
-        for (auto i : result) {
+        fprintf(file, "%d\n", (cycle_num1 + cycle_num2));
+        for (auto i : result1) {
             sort(i.begin(), i.end(), cmp);
             for (auto &cycle : i) {
                 fprintf(file, "%u", cycle[0]);
@@ -224,24 +296,22 @@ private:
     vector<bool> onStack;
     deque<int> stack;
     vector<bool> scc_visited;
-    vector<set<int>> scc_result;
-    int time;
+    int time, total_subGraph;
 
-    vector<bool> visited;
-    deque<int> pointStack;
-    deque<int> marked;
-    vector<vector<vector<unsigned int>>> result;
+    vector<set<int>> scc_result1, scc_result2;
+    vector<bool> visited1, visited2;
+    deque<int> pointStack1, pointStack2;
+    vector<vector<vector<unsigned int>>> result1, result2;
+    int cycle_num1, cycle_num2;
 
-    vector<unsigned int> vertex_set;
+    vector<unsigned int> vertex_set1, vertex_set2;
     unordered_map<unsigned int, int> vertex_hash;
-    vector<vector<int>> graph;
-    vector<vector<bool>> reverse_graph;
+    vector<vector<int>> graph1, graph2;
+    vector<vector<bool>> reverse_graph1, reverse_graph2;
     int total_vertex;
-    int cycle_num;
 };
 
 int main() {
-
 #ifdef DEBUG
     clock_t start, finish;
     start = clock();
@@ -272,7 +342,7 @@ int main() {
 #endif
 
     //find cycle
-    solution.findCyclesInScc();
+    solution.findCycles();
 #ifdef DEBUG
     finish = clock();
     printf("findCycles: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
