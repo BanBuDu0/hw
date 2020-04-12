@@ -133,19 +133,6 @@ public:
         }
     }
 
-
-//    void print_scc() {
-//        for (auto &s:scc_result) {
-//            if (s.size() > 2) {
-//                for (auto &v:s) {
-//                    printf("%u ", v);
-//                }
-//                printf("\n");
-//            }
-//        }
-//    }
-
-
     void findCyclesInScc() {
         visited.resize(total_vertex);
         for (auto &i : scc_result) {
@@ -186,6 +173,7 @@ public:
                 }
             }
         }
+
         visited[current] = false;
         pointStack.pop_front();
     }
@@ -228,41 +216,39 @@ private:
 };
 
 int main() {
-//    clock_t start, finish;
-//    start = clock();
-//    string data_path = R"(D:\hw\data\test_data.txt)";
-//    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
-//    string huawei_path = R"(/root/hw/data/test_data.txt)";
+    clock_t start, finish;
+    start = clock();
+    string data_path = R"(D:\hw\data\test_data2.txt)";
+    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
+    string huawei_path = R"(/root/hw/data/test_data.txt)";
     string iPath = "/data/test_data.txt";
     string oPath = "/projects/student/result.txt";
-//    string o = "result.txt";
+    string o = "result.txt";
 
     //生成数据
     FindCycleSolution solution;
-    solution.generate_graph(iPath);
-//    finish = clock();
-//    printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-//    start = clock();
+    solution.generate_graph(data_path);
+    finish = clock();
+    printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+    start = clock();
 
     //split scc
     solution.scc();
     solution.cutGraph();
-//    solution.print_scc();
-//     solution.generate_sub_graph();
-//    finish = clock();
-//    printf("splic scc: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-//    start = clock();
+    finish = clock();
+    printf("splic scc: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+    start = clock();
 
     //find cycle
     solution.findCyclesInScc();
-//    finish = clock();
-//    printf("findCycles: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-//    start = clock();
+    finish = clock();
+    printf("findCycles: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+    start = clock();
 
     //output
     solution.output(oPath);
-//    finish = clock();
-//    printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-//    system("pause");
+    finish = clock();
+    printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+    system("pause");
     return 0;
 }
