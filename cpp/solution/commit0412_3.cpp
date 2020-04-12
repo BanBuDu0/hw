@@ -1,5 +1,9 @@
 //
 // Created by syj on 2020/4/11.
+// 修改了图的存储结构
+// 在commit0411的基础上
+// 10.36
+// 不判断临边在不在子图中，在递归的时候要少做判断
 //
 #include <iostream>
 #include <list>
@@ -60,30 +64,14 @@ public:
         int f, t;
         graph.resize(total_vertex);
         reverse_graph.resize(total_vertex);
-        reverse_graph2.resize(total_vertex);
+        for (int i = 0; i < total_vertex; i++) {
+            reverse_graph[i].resize(total_vertex, false);
+        }
 
         for (auto &pair : input_pair) {
             f = vertex_hash[pair.first], t = vertex_hash[pair.second];
             graph[f].push_back(t);
-            reverse_graph[t].push_back(f);
-        }
-    }
-
-    //能和scc并行
-    void generate_reverse() {
-        vector<bool> h;
-        for (int i = 0; i < total_vertex; ++i) {
-            unordered_map<int, vector<bool>> temp;
-            // j is adj of i
-            h = vector<bool>(total_vertex, false);
-            for (auto &j : reverse_graph[i]) {
-                vector<int> j_adj = reverse_graph[j];
-                for (auto &k : j_adj) {
-                    h[k] = true;
-                }
-                temp[j] = h;
-            }
-            reverse_graph2[i] = temp;
+            reverse_graph[t][f] = true;
         }
     }
 
@@ -95,6 +83,20 @@ public:
                 continue;
             }
             sccUtil(vertex);
+        }
+    }
+
+    void cutGraph() {
+        for (auto &i : scc_result) {
+            for (auto &vertex : i) {
+                vector<int> temp_adj;
+                for (auto &adj : graph[vertex]) {
+                    if (i.count(adj) != 0) {
+                        temp_adj.push_back(adj);
+                    }
+                }
+                graph[vertex] = temp_adj;
+            }
         }
     }
 
@@ -134,20 +136,6 @@ public:
         }
     }
 
-    void cutGraph() {
-        for (auto &i : scc_result) {
-            for (auto &vertex : i) {
-                vector<int> temp_adj;
-                for (auto &adj : graph[vertex]) {
-                    if (i.count(adj) != 0) {
-                        temp_adj.push_back(adj);
-                    }
-                }
-                graph[vertex] = temp_adj;
-            }
-        }
-    }
-
     void findCyclesInScc() {
         visited.resize(total_vertex);
         for (auto &i : scc_result) {
@@ -174,20 +162,18 @@ public:
                 if (depth < 5) {
                     findAllSimpleCycles(start, adjacent, depth + 1);
                 } else if (depth == 5) {
-                    auto a = reverse_graph2[start][adjacent];
-                    if (!a.empty()) {
-                        if (a[current]) {
-                            vector<unsigned int> cycle;
-                            for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
-                                cycle.push_back(vertex_set[*it]);
-                            }
-                            cycle.push_back(adjacent);
-                            result.push_back(cycle);
+                    if (reverse_graph[start][adjacent]) {
+                        vector<unsigned int> cycle;
+                        for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
+                            cycle.push_back(vertex_set[*it]);
                         }
+                        cycle.push_back(adjacent);
+                        result.push_back(cycle);
                     }
                 }
             }
         }
+
         visited[current] = false;
         pointStack.pop_front();
     }
@@ -225,8 +211,8 @@ private:
 
     vector<unsigned int> vertex_set;
     unordered_map<unsigned int, int> vertex_hash;
-    vector<vector<int>> graph, reverse_graph;
-    vector<unordered_map<int, vector<bool>>> reverse_graph2;
+    vector<vector<int>> graph;
+    vector<vector<bool>> reverse_graph;
     int total_vertex;
 };
 
@@ -238,17 +224,13 @@ int main() {
     string huawei_path = R"(/root/hw/data/test_data.txt)";
     string iPath = "/data/test_data.txt";
     string oPath = "/projects/student/result.txt";
-    string o = "result1.txt";
+    string o = "result.txt";
 
     //生成数据
     FindCycleSolution solution;
     solution.generate_graph(data_path);
     finish = clock();
     printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-    start = clock();
-    solution.generate_reverse();
-    finish = clock();
-    printf("reverse search: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
     start = clock();
 
     //split scc
@@ -268,6 +250,6 @@ int main() {
     solution.output(o);
     finish = clock();
     printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-    //    system("pause");
+//    system("pause");
     return 0;
 }
