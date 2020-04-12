@@ -41,6 +41,8 @@ public:
     FindCycleSolution() {
         time = 0;
         total_vertex = 0;
+        result.resize(5);
+        cycle_num = 0;
     }
 
     ~FindCycleSolution() = default;
@@ -158,7 +160,8 @@ public:
                         cycle[i] = vertex_set[*it];
                         ++i;
                     }
-                    result.push_back(cycle);
+                    result[depth - 2].push_back(cycle);
+                    ++cycle_num;
                 }
             } else if (visited[adjacent] == false && adjacent > start) {
                 if (depth < 5) {
@@ -172,7 +175,8 @@ public:
                             ++i;
                         }
                         cycle[i] = adjacent;
-                        result.push_back(cycle);
+                        result[depth - 1].push_back(cycle);
+                        ++cycle_num;
                     }
                 }
             }
@@ -184,14 +188,16 @@ public:
 
     void output(string &path) {
         FILE *file = fopen(path.c_str(), "w");
-        sort(result.begin(), result.end(), cmp);
-        fprintf(file, "%d\n", result.size());
-        for (auto &cycle : result) {
-            fprintf(file, "%u", cycle[0]);
-            for (int j = 1; j < cycle.size(); ++j) {
-                fprintf(file, ",%u", cycle[j]);
+        fprintf(file, "%d\n", cycle_num);
+        for (auto i : result) {
+            sort(i.begin(), i.end(), cmp);
+            for (auto &cycle : i) {
+                fprintf(file, "%u", cycle[0]);
+                for (int j = 1; j < cycle.size(); ++j) {
+                    fprintf(file, ",%u", cycle[j]);
+                }
+                fprintf(file, "\n");
             }
-            fprintf(file, "\n");
         }
         fclose(file);
     }
@@ -207,13 +213,14 @@ private:
 
     vector<bool> visited;
     deque<int> pointStack;
-    vector<vector<unsigned int>> result;
+    vector<vector<vector<unsigned int>>> result;
 
     vector<unsigned int> vertex_set;
     unordered_map<unsigned int, int> vertex_hash;
     vector<vector<int>> graph;
     vector<vector<bool>> reverse_graph;
     int total_vertex;
+    int cycle_num;
 };
 
 int main() {
@@ -223,7 +230,7 @@ int main() {
     start = clock();
     string data_path = R"(D:\hw\data\test_data.txt)";
     string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
-    string huawei_path = R"(/root/hw/data/test_data.txt)";
+    string huawei_path = R"(/root/hw/data/test_data2.txt)";
     string o = "result.txt";
 #endif
     string iPath = "/data/test_data.txt";
