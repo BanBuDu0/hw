@@ -19,6 +19,8 @@
 
 using namespace std;
 
+#define DEBUG
+
 bool cmp(vector<unsigned int> a, vector<unsigned int> b) {
     if (a.size() == b.size()) {
         for (int i = 0; i < a.size(); i++) {
@@ -215,39 +217,48 @@ private:
 };
 
 int main() {
-//    clock_t start, finish;
-//    start = clock();
+
+#ifdef DEBUG
+    clock_t start, finish;
+    start = clock();
     string data_path = R"(D:\hw\data\test_data.txt)";
-//    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
-//    string huawei_path = R"(/root/hw/data/test_data.txt)";
+    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
+    string huawei_path = R"(/root/hw/data/test_data.txt)";
+    string o = "result.txt";
+#endif
     string iPath = "/data/test_data.txt";
     string oPath = "/projects/student/result.txt";
-    string oo = "result3.txt";
 
     //生成数据
     FindCycleSolution solution;
     solution.generate_graph(data_path);
-//    finish = clock();
-//    printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-//    start = clock();
+#ifdef DEBUG
+    finish = clock();
+    printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+    start = clock();
+#endif
 
     //split scc
     solution.scc();
-    solution.cutGraph();
-//    finish = clock();
-//    printf("splic scc: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-//    start = clock();
+#ifdef DEBUG
+    finish = clock();
+    printf("splic scc: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+    start = clock();
+#endif
 
     //find cycle
     solution.findCyclesInScc();
-//    finish = clock();
-//    printf("findCycles: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-//    start = clock();
-
+#ifdef DEBUG
+    finish = clock();
+    printf("findCycles: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+    start = clock();
+#endif
     //output
-    solution.output(oo);
-//    finish = clock();
-//    printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+    solution.output(o);
+#ifdef DEBUG
+    finish = clock();
+    printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
 //    system("pause");
+#endif
     return 0;
 }
