@@ -15,7 +15,8 @@ add_executable(solution
         #        test2.cpp
         #        test0411.cpp
 #        commit0412.cpp
-        commit0412_3.cpp
+#        commit0412_3.cpp
+        test0412_3.cpp
         #        commit0408.cpp
         #        update_v1.cpp
         )

@@ -1,6 +1,7 @@
 //
 // Created by syj on 2020/4/11.
 // 修改了反向图的存储结构
+// 12.0702
 //
 #include <iostream>
 #include <list>
@@ -149,7 +150,7 @@ public:
         for (auto &adjacent : graph[current]) {
             if (adjacent == start) {
                 if (depth > 1) {
-                    vector<unsigned int> cycle;
+                    vector<unsigned int> cycle = vector<unsigned int>(depth + 1);
                     for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
                         cycle.push_back(vertex_set[*it]);
                     }

@@ -1,6 +1,6 @@
 //
-// Created by syj on 2020/4/11.
-// 保存最后三个点，负优化。。。
+// Created by syj on 2020/4/12.
+// 先做一层深搜，再判断，这个应该很慢
 //
 #include <iostream>
 #include <list>

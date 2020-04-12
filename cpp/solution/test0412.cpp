@@ -1,9 +1,6 @@
 //
 // Created by syj on 2020/4/11.
-// 修改了图的存储结构
-// 在commit0411的基础上
-// 10.36
-// 不判断临边在不在子图中，在递归的时候要少做判断
+// commit0411_2的基础上做了cutGraph
 //
 #include <iostream>
 #include <list>
