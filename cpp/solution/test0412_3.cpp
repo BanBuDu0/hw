@@ -1,7 +1,6 @@
 //
 // Created by syj on 2020/4/11.
-// 修改了反向图的存储结构
-// 12.0702
+// 改成了marked，修改了result的结构
 //
 #include <iostream>
 #include <list>
@@ -143,13 +142,17 @@ public:
         for (auto &i : scc_result) {
             for (auto &vertex : i) {
                 findAllSimpleCycles(vertex, vertex, 0);
+                marked.clear();
+                visited = vector<bool>(total_vertex, false);
             }
         }
     }
 
-    void findAllSimpleCycles(int start, int current, int depth) {
+    int findAllSimpleCycles(int start, int current, int depth) {
+        int retire = 0;
         pointStack.push_front(current);
         visited[current] = true;
+        marked.push_front(current);
 
         for (auto &adjacent : graph[current]) {
             if (adjacent == start) {
@@ -162,11 +165,13 @@ public:
                     }
                     result[depth - 2].push_back(cycle);
                     ++cycle_num;
+                    retire = 1;
                 }
             } else if (visited[adjacent] == false && adjacent > start) {
                 if (depth < 5) {
-                    findAllSimpleCycles(start, adjacent, depth + 1);
+                    retire = findAllSimpleCycles(start, adjacent, depth + 1);
                 } else if (depth == 5) {
+                    retire = 2;
                     if (reverse_graph[start][adjacent]) {
                         vector<unsigned int> cycle = vector<unsigned int>(depth + 2);
                         int i = 0;
@@ -177,13 +182,24 @@ public:
                         cycle[i] = adjacent;
                         result[depth - 1].push_back(cycle);
                         ++cycle_num;
+                        retire = 1;
                     }
                 }
             }
         }
 
-        visited[current] = false;
+        if (retire != 0) {
+            while (marked.front() != current) {
+                int v = marked.front();
+                marked.pop_front();
+                visited[v] = false;
+            }
+            int v = marked.front();
+            marked.pop_front();
+            visited[v] = false;
+        }
         pointStack.pop_front();
+        return retire;
     }
 
     void output(string &path) {
@@ -213,6 +229,7 @@ private:
 
     vector<bool> visited;
     deque<int> pointStack;
+    deque<int> marked;
     vector<vector<vector<unsigned int>>> result;
 
     vector<unsigned int> vertex_set;
@@ -247,6 +264,7 @@ int main() {
 
     //split scc
     solution.scc();
+    solution.cutGraph();
 #ifdef DEBUG
     finish = clock();
     printf("splic scc: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
