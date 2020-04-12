@@ -43,6 +43,8 @@ public:
         total_subGraph = 0;
         total_vertex = 0;
         cycle_num1 = 0, cycle_num2 = 0;
+        result1.resize(5);
+        result2.resize(5);
     }
 
     ~FindCycleSolution() = default;
@@ -176,6 +178,8 @@ public:
     }
 
     void findCycles() {
+        visited1.resize(total_vertex);
+        visited2.resize(total_vertex);
         thread thread1(&FindCycleSolution::findCycleInSccThread1, this);
         thread thread2(&FindCycleSolution::findCycleInSccThread2, this);
         thread1.join();
