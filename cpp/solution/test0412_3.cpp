@@ -1,6 +1,6 @@
 //
 // Created by syj on 2020/4/11.
-// 在commit0412_3的基础上不做cutGraph
+// 修改了反向图的存储结构
 // 12.0702
 //
 #include <iostream>
@@ -18,7 +18,6 @@
 #pragma comment(linker, "/STACK:10000000")
 
 using namespace std;
-#define DEBUG
 
 bool cmp(vector<unsigned int> a, vector<unsigned int> b) {
     if (a.size() == b.size()) {
@@ -85,6 +84,20 @@ public:
         }
     }
 
+    void cutGraph() {
+        for (auto &i : scc_result) {
+            for (auto &vertex : i) {
+                vector<int> temp_adj;
+                for (auto &adj : graph[vertex]) {
+                    if (i.count(adj) != 0) {
+                        temp_adj.push_back(adj);
+                    }
+                }
+                graph[vertex] = temp_adj;
+            }
+        }
+    }
+
     void sccUtil(int vertex) {
         scc_visited[vertex] = true;
         visitedTime[vertex] = time;
@@ -138,8 +151,10 @@ public:
             if (adjacent == start) {
                 if (depth > 1) {
                     vector<unsigned int> cycle = vector<unsigned int>(depth + 1);
+                    int i = 0;
                     for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
-                        cycle.push_back(vertex_set[*it]);
+                        cycle[i] = vertex_set[*it];
+                        ++i;
                     }
                     result.push_back(cycle);
                 }
@@ -148,11 +163,13 @@ public:
                     findAllSimpleCycles(start, adjacent, depth + 1);
                 } else if (depth == 5) {
                     if (reverse_graph[start][adjacent]) {
-                        vector<unsigned int> cycle;
+                        vector<unsigned int> cycle = vector<unsigned int>(depth + 2);
+                        int i = 0;
                         for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
-                            cycle.push_back(vertex_set[*it]);
+                            cycle[i] = vertex_set[*it];
+                            ++i;
                         }
-                        cycle.push_back(adjacent);
+                        cycle[i] = adjacent;
                         result.push_back(cycle);
                     }
                 }
@@ -164,21 +181,17 @@ public:
     }
 
     void output(string &path) {
-        ofstream outfile(path, ios::trunc);
-        vector<vector<unsigned int>> all_res;
-        outfile << result.size() << endl;
+        FILE *file = fopen(path.c_str(), "w");
         sort(result.begin(), result.end(), cmp);
+        fprintf(file, "%d\n", result.size());
         for (auto &cycle : result) {
-            for (auto &vertex : cycle) {
-                if (vertex == cycle.back()) {
-                    outfile << vertex;
-                } else {
-                    outfile << vertex << ",";
-                }
+            fprintf(file, "%u", cycle[0]);
+            for (int j = 1; j < cycle.size(); ++j) {
+                fprintf(file, ",%u", cycle[j]);
             }
-            outfile << "\n";
+            fprintf(file, "\n");
         }
-        outfile.close();
+        fclose(file);
     }
 
 private:
@@ -202,48 +215,39 @@ private:
 };
 
 int main() {
-#ifdef DEBUG
-    clock_t start, finish;
-    start = clock();
+//    clock_t start, finish;
+//    start = clock();
     string data_path = R"(D:\hw\data\test_data.txt)";
-    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
-    string huawei_path = R"(/root/hw/data/test_data.txt)";
-    string o = "result.txt";
-#endif
+//    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
+//    string huawei_path = R"(/root/hw/data/test_data.txt)";
     string iPath = "/data/test_data.txt";
     string oPath = "/projects/student/result.txt";
+    string oo = "result3.txt";
 
     //生成数据
     FindCycleSolution solution;
     solution.generate_graph(data_path);
-#ifdef DEBUG
-    finish = clock();
-    printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-    start = clock();
-#endif
+//    finish = clock();
+//    printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+//    start = clock();
 
     //split scc
     solution.scc();
-#ifdef DEBUG
-    finish = clock();
-    printf("splic scc: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-    start = clock();
-#endif
+    solution.cutGraph();
+//    finish = clock();
+//    printf("splic scc: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+//    start = clock();
 
     //find cycle
     solution.findCyclesInScc();
-#ifdef DEBUG
-    finish = clock();
-    printf("findCycles: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-    start = clock();
-#endif
-    //output
-    solution.output(o);
-#ifdef DEBUG
-    finish = clock();
-    printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
-    system("pause");
+//    finish = clock();
+//    printf("findCycles: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+//    start = clock();
 
-#endif
+    //output
+    solution.output(oo);
+//    finish = clock();
+//    printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
+//    system("pause");
     return 0;
 }
