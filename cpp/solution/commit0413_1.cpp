@@ -1,12 +1,13 @@
 //
-// Created by syj on 2020/4/11.
+// Created by syj on 2020/4/13.
 // 修改了result的结构，做cutGraph
+//
+// 10.7686
 //
 #include <iostream>
 #include <list>
 #include <vector>
 #include <string>
-#include <map>
 #include <set>
 #include <ctime>
 #include <deque>
@@ -18,7 +19,7 @@
 
 using namespace std;
 
-#define DEBUG
+//#define DEBUG
 
 bool cmp(vector<unsigned int> a, vector<unsigned int> b) {
     for (int i = 0; i < a.size(); i++) {
@@ -178,23 +179,20 @@ public:
         pointStack.pop_front();
     }
 
-    void output1(vector<vector<unsigned int>> *sub_result) {
+    void sort_result(vector<vector<unsigned int>> *sub_result) {
         sort(sub_result->begin(), sub_result->end(), cmp);
     }
 
-    void sss() {
-        cout << "asdasd";
-    }
 
     void output(string &path) {
         FILE *file = fopen(path.c_str(), "w");
         fprintf(file, "%d\n", cycle_num);
 
-        thread thread1(&FindCycleSolution::output1, this, &result[0]);
-        thread thread2(&FindCycleSolution::output1, this, &result[1]);
-        thread thread3(&FindCycleSolution::output1, this, &result[2]);
-        thread thread4(&FindCycleSolution::output1, this, &result[3]);
-        thread thread5(&FindCycleSolution::output1, this, &result[4]);
+        thread thread1(&FindCycleSolution::sort_result, this, &result[0]);
+        thread thread2(&FindCycleSolution::sort_result, this, &result[1]);
+        thread thread3(&FindCycleSolution::sort_result, this, &result[2]);
+        thread thread4(&FindCycleSolution::sort_result, this, &result[3]);
+        thread thread5(&FindCycleSolution::sort_result, this, &result[4]);
         thread1.join();
         thread2.join();
         thread3.join();
@@ -243,7 +241,7 @@ int main() {
     start = clock();
     string data_path = R"(D:\hw\data\test_data.txt)";
     string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
-    string huawei_path = R"(/root/hw/data/test_data2.txt)";
+    string huawei_path = R"(/root/hw/data/test_data.txt)";
     string o = "result.txt";
 #endif
     string iPath = "/data/test_data.txt";
@@ -251,7 +249,7 @@ int main() {
 
     //生成数据
     FindCycleSolution solution;
-    solution.generate_graph(linux_path);
+    solution.generate_graph(iPath);
 #ifdef DEBUG
     finish = clock();
     printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
@@ -275,7 +273,7 @@ int main() {
     start = clock();
 #endif
     //output
-    solution.output(o);
+    solution.output(oPath);
 #ifdef DEBUG
     finish = clock();
     printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
