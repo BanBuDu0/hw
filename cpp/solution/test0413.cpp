@@ -183,8 +183,8 @@ public:
         pointStack.pop_front();
     }
 
-    void output1(vector<vector<unsigned int>> sub_result) {
-        sort(sub_result.begin(), sub_result.end(), cmp);
+    void output1(vector<vector<unsigned int>> *sub_result) {
+        sort(sub_result->begin(), sub_result->end(), cmp);
     }
 
     void sss() {
@@ -195,8 +195,20 @@ public:
         FILE *file = fopen(path.c_str(), "w");
         fprintf(file, "%d\n", cycle_num);
 
+        thread thread1(&FindCycleSolution::output1, this, &result[0]);
+        thread thread2(&FindCycleSolution::output1, this, &result[1]);
+        thread thread3(&FindCycleSolution::output1, this, &result[2]);
+        thread thread4(&FindCycleSolution::output1, this, &result[3]);
+        thread thread5(&FindCycleSolution::output1, this, &result[4]);
+        thread1.join();
+        thread2.join();
+        thread3.join();
+        thread4.join();
+        thread5.join();
+
+
         for (auto i : result) {
-            sort(i.begin(), i.end(), cmp);
+//            sort(i.begin(), i.end(), cmp);
             for (auto &cycle : i) {
                 fprintf(file, "%u", cycle[0]);
                 for (int j = 1; j < cycle.size(); ++j) {
@@ -235,7 +247,7 @@ int main() {
     clock_t start, finish;
     start = clock();
     string data_path = R"(D:\hw\data\test_data.txt)";
-    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
+    string linux_path = R"(/home/syj/Documents/hw/data/test_data2.txt)";
     string huawei_path = R"(/root/hw/data/test_data2.txt)";
     string o = "result.txt";
 #endif
@@ -244,7 +256,7 @@ int main() {
 
     //生成数据
     FindCycleSolution solution;
-    solution.generate_graph(data_path);
+    solution.generate_graph(linux_path);
 #ifdef DEBUG
     finish = clock();
     printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);

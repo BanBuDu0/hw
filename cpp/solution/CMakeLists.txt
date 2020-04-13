@@ -3,7 +3,8 @@ project(solution)
 
 set(CMAKE_CXX_STANDARD 14)
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--stack,1000000000")
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--stack,1000000000")
+
 add_executable(solution
         #        tarjan_baseline.cpp
         #        commit0409_2.cpp
@@ -19,3 +20,5 @@ add_executable(solution
         #        commit0408.cpp
         #        update_v1.cpp
         )
+find_package(Threads REQUIRED)
+target_link_libraries(solution Threads::Threads)
