@@ -12,6 +12,7 @@
 #include <deque>
 #include <unordered_map>
 #include <algorithm>
+#include <thread>
 
 #pragma comment(linker, "/STACK:10000000")
 
@@ -151,15 +152,13 @@ public:
         for (auto &adjacent : graph[current]) {
             if (adjacent == start) {
                 if (depth > 1) {
-                    map<unsigned int, vector<unsigned int>> cycle1;
                     vector<unsigned int> cycle = vector<unsigned int>(depth + 1);
                     int i = 0;
                     for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
                         cycle[i] = vertex_set[*it];
                         ++i;
                     }
-                    cycle1[current] = cycle;
-                    result[depth - 2].push_back(cycle1);
+                    result[depth - 2].push_back(cycle);
                     ++cycle_num;
                 }
             } else if (visited[adjacent] == false && adjacent > start) {
@@ -167,7 +166,6 @@ public:
                     findAllSimpleCycles(start, adjacent, depth + 1);
                 } else if (depth == 5) {
                     if (reverse_graph[start][adjacent]) {
-                        map<unsigned int, vector<unsigned int>> cycle1;
                         vector<unsigned int> cycle = vector<unsigned int>(depth + 2);
                         int i = 0;
                         for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
@@ -175,8 +173,7 @@ public:
                             ++i;
                         }
                         cycle[i] = adjacent;
-                        cycle1[adjacent] = cycle;
-                        result[depth - 1].push_back(cycle1);
+                        result[depth - 1].push_back(cycle);
                         ++cycle_num;
                     }
                 }
@@ -186,23 +183,28 @@ public:
         pointStack.pop_front();
     }
 
+    void output1(vector<vector<unsigned int>> sub_result) {
+        sort(sub_result.begin(), sub_result.end(), cmp);
+    }
+
+    void sss() {
+        cout << "asdasd";
+    }
 
     void output(string &path) {
         FILE *file = fopen(path.c_str(), "w");
         fprintf(file, "%d\n", cycle_num);
-        for (int j = 0; j < result.size(); ++j) {
-            for (map<unsigned int, vector<unsigned int>> &m_vec : result[j]) {
-                for (auto &m_map : m_vec) {
-                    vector<unsigned int> temp = m_map.second;
-                    fprintf(file, "%u", temp[0]);
-                    for (int i = 1; i < j + 3; ++i) {
-                        fprintf(file, ",%u", temp[i]);
-                    }
-                    fprintf(file, "\n");
+
+        for (auto i : result) {
+            sort(i.begin(), i.end(), cmp);
+            for (auto &cycle : i) {
+                fprintf(file, "%u", cycle[0]);
+                for (int j = 1; j < cycle.size(); ++j) {
+                    fprintf(file, ",%u", cycle[j]);
                 }
+                fprintf(file, "\n");
             }
         }
-
         fclose(file);
     }
 
@@ -217,7 +219,7 @@ private:
 
     vector<bool> visited;
     deque<int> pointStack;
-    vector<vector<map<unsigned int, vector<unsigned int>>>> result;
+    vector<vector<vector<unsigned int>>> result;
 
     vector<unsigned int> vertex_set;
     unordered_map<unsigned int, int> vertex_hash;

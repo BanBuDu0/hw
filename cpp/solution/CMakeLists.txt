@@ -4,7 +4,6 @@ project(solution)
 set(CMAKE_CXX_STANDARD 14)
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--stack,1000000000")
-
 add_executable(solution
         #        tarjan_baseline.cpp
         #        commit0409_2.cpp
