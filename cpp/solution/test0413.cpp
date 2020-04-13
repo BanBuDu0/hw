@@ -21,18 +21,13 @@ using namespace std;
 #define DEBUG
 
 bool cmp(vector<unsigned int> a, vector<unsigned int> b) {
-    if (a.size() == b.size()) {
-        for (int i = 0; i < a.size(); i++) {
-            if (a[i] == b[i]) {
-                continue;
-            } else {
-                return a[i] < b[i];
-            }
+    for (int i = 0; i < a.size(); i++) {
+        if (a[i] == b[i]) {
+            continue;
+        } else {
+            return a[i] < b[i];
         }
-    } else {
-        return a.size() < b.size();
     }
-    return a.size() < b.size();
 }
 
 class FindCycleSolution {
@@ -247,7 +242,7 @@ int main() {
     clock_t start, finish;
     start = clock();
     string data_path = R"(D:\hw\data\test_data.txt)";
-    string linux_path = R"(/home/syj/Documents/hw/data/test_data2.txt)";
+    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
     string huawei_path = R"(/root/hw/data/test_data2.txt)";
     string o = "result.txt";
 #endif
