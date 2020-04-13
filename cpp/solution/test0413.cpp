@@ -18,7 +18,7 @@
 
 using namespace std;
 
-//#define DEBUG
+#define DEBUG
 
 bool cmp(vector<unsigned int> a, vector<unsigned int> b) {
     for (int i = 0; i < a.size(); i++) {
@@ -35,8 +35,10 @@ public:
     FindCycleSolution() {
         time = 0;
         total_vertex = 0;
-        result.resize(5);
-        cycle_num = 0;
+        result1.resize(5);
+        result2.resize(5);
+        cycle_num1 = 0;
+        cycle_num2 = 0;
     }
 
     ~FindCycleSolution() = default;
@@ -133,49 +135,107 @@ public:
     }
 
     void findCyclesInScc() {
-        visited.resize(total_vertex);
-        for (auto &i : scc_result) {
-            for (auto &vertex : i) {
-                findAllSimpleCycles(vertex, vertex, 0);
+        visited1.resize(total_vertex);
+        visited2.resize(total_vertex);
+//        for (auto &i : scc_result) {
+//            for (auto &vertex : i) {
+//                findAllSimpleCycles(vertex, vertex, 0);
+//            }
+//        }
+        thread thread1(&FindCycleSolution::find1, this);
+        thread thread2(&FindCycleSolution::find2, this);
+        thread1.join();
+        thread2.join();
+    }
+
+    void find1() {
+        for (int i = 0; i < scc_result.size(); i += 2) {
+            for (auto &vertex : scc_result[i]) {
+                findAllSimpleCycles1(vertex, vertex, 0);
             }
         }
     }
 
-    void findAllSimpleCycles(int start, int current, int depth) {
-        pointStack.push_front(current);
-        visited[current] = true;
+    void find2() {
+        for (int i = 1; i < scc_result.size(); i += 2) {
+            for (auto &vertex : scc_result[i]) {
+                findAllSimpleCycles2(vertex, vertex, 0);
+            }
+        }
+    }
+
+    void findAllSimpleCycles1(int start, int current, int depth) {
+        pointStack1.push_front(current);
+        visited1[current] = true;
         for (auto &adjacent : graph[current]) {
             if (adjacent == start) {
                 if (depth > 1) {
                     vector<unsigned int> cycle = vector<unsigned int>(depth + 1);
                     int i = 0;
-                    for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
+                    for (auto it = pointStack1.rbegin(); it != pointStack1.rend(); ++it) {
                         cycle[i] = vertex_set[*it];
                         ++i;
                     }
-                    result[depth - 2].push_back(cycle);
-                    ++cycle_num;
+                    result1[depth - 2].push_back(cycle);
+                    ++cycle_num1;
                 }
-            } else if (visited[adjacent] == false && adjacent > start) {
+            } else if (visited1[adjacent] == false && adjacent > start) {
                 if (depth < 5) {
-                    findAllSimpleCycles(start, adjacent, depth + 1);
+                    findAllSimpleCycles1(start, adjacent, depth + 1);
                 } else if (depth == 5) {
                     if (reverse_graph[start][adjacent]) {
                         vector<unsigned int> cycle = vector<unsigned int>(depth + 2);
                         int i = 0;
-                        for (auto it = pointStack.rbegin(); it != pointStack.rend(); ++it) {
+                        for (auto it = pointStack1.rbegin(); it != pointStack1.rend(); ++it) {
                             cycle[i] = vertex_set[*it];
                             ++i;
                         }
                         cycle[i] = adjacent;
-                        result[depth - 1].push_back(cycle);
-                        ++cycle_num;
+                        result1[depth - 1].push_back(cycle);
+                        ++cycle_num1;
                     }
                 }
             }
         }
-        visited[current] = false;
-        pointStack.pop_front();
+        visited1[current] = false;
+        pointStack1.pop_front();
+    }
+
+    void findAllSimpleCycles2(int start, int current, int depth) {
+        pointStack2.push_front(current);
+        visited2[current] = true;
+        for (auto &adjacent : graph[current]) {
+            if (adjacent == start) {
+                if (depth > 1) {
+                    vector<unsigned int> cycle = vector<unsigned int>(depth + 1);
+                    int i = 0;
+                    for (auto it = pointStack2.rbegin(); it != pointStack2.rend(); ++it) {
+                        cycle[i] = vertex_set[*it];
+                        ++i;
+                    }
+                    result2[depth - 2].push_back(cycle);
+                    ++cycle_num2;
+                }
+            } else if (visited2[adjacent] == false && adjacent > start) {
+                if (depth < 5) {
+                    findAllSimpleCycles2(start, adjacent, depth + 1);
+                } else if (depth == 5) {
+                    if (reverse_graph[start][adjacent]) {
+                        vector<unsigned int> cycle = vector<unsigned int>(depth + 2);
+                        int i = 0;
+                        for (auto it = pointStack2.rbegin(); it != pointStack2.rend(); ++it) {
+                            cycle[i] = vertex_set[*it];
+                            ++i;
+                        }
+                        cycle[i] = adjacent;
+                        result2[depth - 1].push_back(cycle);
+                        ++cycle_num2;
+                    }
+                }
+            }
+        }
+        visited2[current] = false;
+        pointStack2.pop_front();
     }
 
     void sort_result(vector<vector<unsigned int>> *sub_result) {
@@ -184,23 +244,27 @@ public:
 
 
     void output(string &path) {
+        for (int i = 0; i < 5; ++i) {
+            for (int j = 0; j < result2[i].size(); ++j) {
+                result1[i].push_back(result2[i][j]);
+            }
+        }
+
         FILE *file = fopen(path.c_str(), "w");
-        fprintf(file, "%d\n", cycle_num);
+        fprintf(file, "%d\n", cycle_num1 + cycle_num2);
 
-//        thread thread1(&FindCycleSolution::sort_result, this, &result[0]);
-//        thread thread2(&FindCycleSolution::sort_result, this, &result[1]);
-//        thread thread3(&FindCycleSolution::sort_result, this, &result[2]);
-//        thread thread4(&FindCycleSolution::sort_result, this, &result[3]);
-//        thread thread5(&FindCycleSolution::sort_result, this, &result[4]);
-//        thread1.join();
-//        thread2.join();
-//        thread3.join();
-//        thread4.join();
-//        thread5.join();
+        thread thread1(&FindCycleSolution::sort_result, this, &result1[0]);
+        thread thread2(&FindCycleSolution::sort_result, this, &result1[1]);
+        thread thread3(&FindCycleSolution::sort_result, this, &result1[2]);
+        thread thread4(&FindCycleSolution::sort_result, this, &result1[3]);
+        thread thread5(&FindCycleSolution::sort_result, this, &result1[4]);
+        thread1.join();
+        thread2.join();
+        thread3.join();
+        thread4.join();
+        thread5.join();
 
-
-        for (auto i : result) {
-            sort(i.begin(), i.end(), cmp);
+        for (auto i : result1) {
             for (auto &cycle : i) {
                 fprintf(file, "%u", cycle[0]);
                 for (int j = 1; j < cycle.size(); ++j) {
@@ -221,16 +285,17 @@ private:
     vector<set<int>> scc_result;
     int time;
 
-    vector<bool> visited;
-    deque<int> pointStack;
-    vector<vector<vector<unsigned int>>> result;
+    vector<bool> visited1, visited2;
+    deque<int> pointStack1, pointStack2;
+    vector<vector<vector<unsigned int>>> result1, result2;
+    int cycle_num1, cycle_num2;
 
     vector<unsigned int> vertex_set;
     unordered_map<unsigned int, int> vertex_hash;
     vector<vector<int>> graph;
     vector<vector<bool>> reverse_graph;
     int total_vertex;
-    int cycle_num;
+
 };
 
 int main() {
@@ -239,7 +304,7 @@ int main() {
     clock_t start, finish;
     start = clock();
     string data_path = R"(D:\hw\data\test_data.txt)";
-    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
+    string linux_path = R"(/home/syj/Documents/hw/data/test_data2.txt)";
     string huawei_path = R"(/root/hw/data/test_data.txt)";
     string o = "result.txt";
 #endif
@@ -247,7 +312,7 @@ int main() {
     string oPath = "/projects/student/result.txt";
 
     FindCycleSolution solution;
-    solution.generate_graph(iPath);
+    solution.generate_graph(linux_path);
 #ifdef DEBUG
     finish = clock();
     printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
@@ -271,7 +336,7 @@ int main() {
     start = clock();
 #endif
     //output
-    solution.output(oPath);
+    solution.output(o);
 #ifdef DEBUG
     finish = clock();
     printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
