@@ -1,7 +1,8 @@
 //
 // Created by syj on 2020/4/13.
 // 修改了result的结构，做cutGraph
-// 11.15
+// 加了多线程
+// 10.9320
 //
 #include <iostream>
 #include <list>
@@ -18,7 +19,7 @@
 
 using namespace std;
 
-#define DEBUG
+//#define DEBUG
 
 bool cmp(vector<unsigned int> a, vector<unsigned int> b) {
     for (int i = 0; i < a.size(); i++) {
@@ -312,7 +313,7 @@ int main() {
     string oPath = "/projects/student/result.txt";
 
     FindCycleSolution solution;
-    solution.generate_graph(linux_path);
+    solution.generate_graph(iPath);
 #ifdef DEBUG
     finish = clock();
     printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
@@ -336,7 +337,7 @@ int main() {
     start = clock();
 #endif
     //output
-    solution.output(o);
+    solution.output(oPath);
 #ifdef DEBUG
     finish = clock();
     printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);

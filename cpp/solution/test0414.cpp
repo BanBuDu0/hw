@@ -1,7 +1,8 @@
 //
 // Created by syj on 2020/4/13.
 // 修改了result的结构，做cutGraph
-// 11.15
+// 加了多线程
+// 10.9320
 //
 #include <iostream>
 #include <list>
@@ -35,10 +36,12 @@ public:
     FindCycleSolution() {
         time = 0;
         total_vertex = 0;
-        result1.resize(5);
-        result2.resize(5);
         cycle_num1 = 0;
         cycle_num2 = 0;
+        for (int i = 0; i < 5; ++i) {
+            temp_cycle1[i].resize(i + 3);
+            temp_cycle2[i].resize(i + 3);
+        }
     }
 
     ~FindCycleSolution() = default;
@@ -137,6 +140,11 @@ public:
     void findCyclesInScc() {
         visited1.resize(total_vertex);
         visited2.resize(total_vertex);
+//        for (auto &i : scc_result) {
+//            for (auto &vertex : i) {
+//                findAllSimpleCycles(vertex, vertex, 0);
+//            }
+//        }
         thread thread1(&FindCycleSolution::find1, this);
         thread thread2(&FindCycleSolution::find2, this);
         thread1.join();
@@ -144,23 +152,18 @@ public:
     }
 
     void find1() {
-        int i = 0;
-        for (int a : scc_result[0]) {
-            if (i % 2 == 0) {
-                findAllSimpleCycles1(a, a, 0);
+        for (int i = 0; i < scc_result.size(); i += 2) {
+            for (auto &vertex : scc_result[i]) {
+                findAllSimpleCycles1(vertex, vertex, 0);
             }
-            i++;
         }
     }
 
-
     void find2() {
-        int j = 0;
-        for (int a : scc_result[0]) {
-            if (j % 2 == 1) {
-                findAllSimpleCycles1(a, a, 0);
+        for (int i = 1; i < scc_result.size(); i += 2) {
+            for (auto &vertex : scc_result[i]) {
+                findAllSimpleCycles2(vertex, vertex, 0);
             }
-            j++;
         }
     }
 
@@ -170,14 +173,12 @@ public:
         for (auto &adjacent : graph[current]) {
             if (adjacent == start) {
                 if (depth > 1) {
-                    cout << endl;
-                    vector<unsigned int> cycle;
                     int i = 0;
                     for (auto it = pointStack1.rbegin(); it != pointStack1.rend(); ++it) {
-                        cycle.push_back(vertex_set[*it]);
+                        temp_cycle1[depth - 2][i] = vertex_set[*it];
                         ++i;
                     }
-                    result1[depth - 2].push_back(cycle);
+                    result1[depth - 2].push_back(temp_cycle1[depth - 2]);
                     ++cycle_num1;
                 }
             } else if (visited1[adjacent] == false && adjacent > start) {
@@ -185,14 +186,13 @@ public:
                     findAllSimpleCycles1(start, adjacent, depth + 1);
                 } else if (depth == 5) {
                     if (reverse_graph[start][adjacent]) {
-                        vector<unsigned int> cycle = vector<unsigned int>(depth + 2, 0);
                         int i = 0;
                         for (auto it = pointStack1.rbegin(); it != pointStack1.rend(); ++it) {
-                            cycle.push_back(vertex_set[*it]);
+                            temp_cycle1[depth - 1][i] = vertex_set[*it];
                             ++i;
                         }
-                        cycle.push_back(adjacent);
-                        result1[depth - 1].push_back(cycle);
+                        temp_cycle1[depth - 1][i] = adjacent;
+                        result1[depth - 1].push_back(temp_cycle1[depth - 1]);
                         ++cycle_num1;
                     }
                 }
@@ -208,13 +208,12 @@ public:
         for (auto &adjacent : graph[current]) {
             if (adjacent == start) {
                 if (depth > 1) {
-                    vector<unsigned int> cycle;
                     int i = 0;
                     for (auto it = pointStack2.rbegin(); it != pointStack2.rend(); ++it) {
-                        cycle.push_back(vertex_set[*it]);
+                        temp_cycle2[depth - 2][i] = vertex_set[*it];
                         ++i;
                     }
-                    result2[depth - 2].push_back(cycle);
+                    result2[depth - 2].push_back(temp_cycle2[depth - 2]);
                     ++cycle_num2;
                 }
             } else if (visited2[adjacent] == false && adjacent > start) {
@@ -222,14 +221,13 @@ public:
                     findAllSimpleCycles2(start, adjacent, depth + 1);
                 } else if (depth == 5) {
                     if (reverse_graph[start][adjacent]) {
-                        vector<unsigned int> cycle;
                         int i = 0;
                         for (auto it = pointStack2.rbegin(); it != pointStack2.rend(); ++it) {
-                            cycle.push_back(vertex_set[*it]);
+                            temp_cycle2[depth - 1][i] = vertex_set[*it];
                             ++i;
                         }
-                        cycle.push_back(adjacent);
-                        result2[depth - 1].push_back(cycle);
+                        temp_cycle2[depth - 1][i] = adjacent;
+                        result2[depth - 1].push_back(temp_cycle2[depth - 1]);
                         ++cycle_num2;
                     }
                 }
@@ -239,7 +237,7 @@ public:
         pointStack2.pop_front();
     }
 
-    inline static void sort_result(vector<vector<unsigned int>> *sub_result) {
+    void sort_result(vector<vector<unsigned int>> *sub_result) {
         sort(sub_result->begin(), sub_result->end(), cmp);
     }
 
@@ -254,12 +252,11 @@ public:
         FILE *file = fopen(path.c_str(), "w");
         fprintf(file, "%d\n", cycle_num1 + cycle_num2);
 
-        thread thread1(sort_result, &result1[0]);
-        thread thread2(sort_result, &result1[1]);
-        thread thread3(sort_result, &result1[2]);
-        thread thread4(sort_result, &result1[3]);
-        thread thread5(sort_result, &result1[4]);
-
+        thread thread1(&FindCycleSolution::sort_result, this, &result1[0]);
+        thread thread2(&FindCycleSolution::sort_result, this, &result1[1]);
+        thread thread3(&FindCycleSolution::sort_result, this, &result1[2]);
+        thread thread4(&FindCycleSolution::sort_result, this, &result1[3]);
+        thread thread5(&FindCycleSolution::sort_result, this, &result1[4]);
         thread1.join();
         thread2.join();
         thread3.join();
@@ -289,8 +286,9 @@ private:
 
     vector<bool> visited1, visited2;
     deque<int> pointStack1, pointStack2;
-    vector<vector<vector<unsigned int>>> result1, result2;
+    vector<vector<unsigned int>> result1[5], result2[5];
     int cycle_num1, cycle_num2;
+    vector<unsigned int> temp_cycle1[5], temp_cycle2[5];
 
     vector<unsigned int> vertex_set;
     unordered_map<unsigned int, int> vertex_hash;
@@ -306,7 +304,7 @@ int main() {
     clock_t start, finish;
     start = clock();
     string data_path = R"(D:\hw\data\test_data.txt)";
-    string linux_path = R"(/home/syj/Documents/hw/data/test_data2.txt)";
+    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
     string huawei_path = R"(/root/hw/data/test_data.txt)";
     string o = "result.txt";
 #endif

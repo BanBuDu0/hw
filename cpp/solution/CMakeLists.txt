@@ -14,14 +14,14 @@ add_executable(solution
         #        commit0412.cpp
         #        test2.cpp
         #        test0411.cpp
-#        commit0412.cpp
-#        commit0413_!.cpp
-#        test0412_3.cpp
+        #        commit0412.cpp
+        #        commit0413_!.cpp
+        #        test0412_3.cpp
         #        commit0408.cpp
         #        update_v1.cpp
-#        commit0413_2.cpp
-        test0413.cpp
-#        test0413_2.cpp
+        #        commit0413_2.cpp
+        #        commit0414_1.cpp
+        test0414.cpp
 
         )
 find_package(Threads REQUIRED)
