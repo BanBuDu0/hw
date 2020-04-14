@@ -18,7 +18,7 @@
 
 using namespace std;
 
-#define DEBUG
+//#define DEBUG
 
 bool cmp(vector<unsigned int> a, vector<unsigned int> b) {
     for (int i = 0; i < a.size(); i++) {
@@ -304,7 +304,7 @@ int main() {
     string oPath = "/projects/student/result.txt";
 
     FindCycleSolution solution;
-    solution.generate_graph(linux_path);
+    solution.generate_graph(iPath);
 #ifdef DEBUG
     finish = clock();
     printf("generate_graph: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
@@ -327,10 +327,9 @@ int main() {
     printf("findCycles: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
     start = clock();
 #endif
-    cout << "asdasd" << endl;
 
     //output
-    solution.output(o);
+    solution.output(oPath);
 #ifdef DEBUG
     finish = clock();
     printf("output: %f ms\n", ((double) (finish - start) / CLOCKS_PER_SEC) * 1000);
