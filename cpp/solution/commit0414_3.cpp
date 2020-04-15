@@ -1,8 +1,7 @@
 //
 // Created by syj on 2020/4/13.
-// 修改了result的结构，做cutGraph
-// 加了多线程
-// 10.7625
+// 改变了pointStack的结构
+// 10.8122
 //
 #include <iostream>
 #include <vector>
