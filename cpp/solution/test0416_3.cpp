@@ -42,20 +42,20 @@ public:
             vertex_set.push_back(to);
             vertex_set.push_back(from);
         }
-        sort(vertex_set.begin(), vertex_set.end());
-        vertex_set.erase(unique(vertex_set.begin(), vertex_set.end()), vertex_set.end());
+        set<unsigned int> st(vertex_set.begin(), vertex_set.end());
+        vertex_set.assign(make_move_iterator(st.begin()), make_move_iterator(st.end()));
 
         for (auto &vertex : vertex_set) {
             vertex_hash[vertex] = total_vertex++;
         }
 
-        graph.resize(total_vertex);
-        reverse_graph.resize(total_vertex);
+        graph = new set<int>[total_vertex];
+        reverse_graph = new bool *[total_vertex];
         visited1 = new bool[total_vertex]{false};
         visited2 = new bool[total_vertex]{false};
         int f, t;
         for (int i = 0; i < total_vertex; i++) {
-            reverse_graph[i].resize(total_vertex, false);
+            reverse_graph[i] = new bool[total_vertex]{false};
         }
 
         for (auto &pair : input_pair) {
@@ -92,7 +92,7 @@ public:
         for (auto &adjacent : graph[current]) {
             if (adjacent == start && depth > 1) {
                 for (int i = 0; i < depth + 1; ++i) {
-                    tempStack1[depth - 2][i] = pointStack1[i];
+                    tempStack1[depth - 2][i] = vertex_set[pointStack1[i]];
                 }
                 result1[depth - 2].push_back(tempStack1[depth - 2]);
                 ++cycle_num1;
@@ -103,7 +103,7 @@ public:
                     if (reverse_graph[start][adjacent]) {
                         pointStack1[depth + 1] = adjacent;
                         for (int i = 0; i < depth + 2; ++i) {
-                            tempStack1[depth - 1][i] = pointStack1[i];
+                            tempStack1[depth - 1][i] = vertex_set[pointStack1[i]];
                         }
                         result1[depth - 1].push_back(tempStack1[depth - 1]);
                         ++cycle_num1;
@@ -121,7 +121,7 @@ public:
         for (auto &adjacent : graph[current]) {
             if (adjacent == start && depth > 1) {
                 for (int i = 0; i < depth + 1; ++i) {
-                    tempStack2[depth - 2][i] = pointStack2[i];
+                    tempStack2[depth - 2][i] = vertex_set[pointStack2[i]];
                 }
                 result2[depth - 2].push_back(tempStack2[depth - 2]);
                 ++cycle_num2;
@@ -132,7 +132,7 @@ public:
                     if (reverse_graph[start][adjacent]) {
                         pointStack2[depth + 1] = adjacent;
                         for (int i = 0; i < depth + 2; ++i) {
-                            tempStack2[depth - 1][i] = pointStack2[i];
+                            tempStack2[depth - 1][i] = vertex_set[pointStack2[i]];
                         }
                         result2[depth - 1].push_back(tempStack2[depth - 1]);
                         ++cycle_num2;
@@ -146,7 +146,7 @@ public:
     void output(string &path) {
         FILE *file = fopen(path.c_str(), "w");
         fprintf(file, "%d\n", cycle_num1 + cycle_num2);
-        for(int i = 0; i < 5; ++i){
+        for (int i = 0; i < 5; ++i) {
             for (auto &cycle : result1[i]) {
                 fprintf(file, "%u", cycle[0]);
                 for (int j = 1; j < cycle.size(); ++j) {
@@ -163,7 +163,6 @@ public:
                 fprintf(file, "\n");
             }
         }
-
         fclose(file);
     }
 
@@ -174,25 +173,24 @@ private:
     vector<vector<unsigned int>> result1[5], result2[5];
 
     vector<unsigned int> vertex_set;
-    vector<set<int>> graph;
-    vector<vector<bool>> reverse_graph;
+    set<int> *graph;
+    bool **reverse_graph;
     int total_vertex;
     int cycle_num1, cycle_num2;
 };
 
 int main() {
-//    clock_t start, finish;
-//    start = clock();
-//    string data_path = R"(D:\hw\data\test_data.txt)";
-//    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
-//    string huawei_path = R"(/root/hw/data/test_data.txt)";
-//    string o = "result.txt";
+    clock_t start, finish;
+    start = clock();
+    string data_path = R"(D:\hw\data\test_data.txt)";
+    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
+    string huawei_path = R"(/root/hw/data/test_data.txt)";
+    string o = "result.txt";
     string iPath = "/data/test_data.txt";
     string oPath = "/projects/student/result.txt";
     FindCycleSolution solution;
-    solution.generate_graph(iPath);
+    solution.generate_graph(data_path);
     solution.finCycle();
-    solution.output(oPath);
-
+    solution.output(o);
     return 0;
 }
