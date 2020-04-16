@@ -2,7 +2,7 @@
 // Created by syj on 2020/4/11.
 // 修改了图的存储结构
 // 在commit0416_2的基础上
-// 8.1374
+// graph, reverse_graph, visited, result;
 //
 #include <iostream>
 #include <list>
@@ -12,11 +12,11 @@
 #include <deque>
 #include <unordered_map>
 #include <algorithm>
+#include <ctime>
 
 #pragma comment(linker, "/STACK:10000000")
 
 using namespace std;
-
 
 class FindCycleSolution {
 public:
@@ -26,42 +26,19 @@ public:
         for (int i = 0; i < 5; ++i) {
             tempStack[i].resize(i + 3);
         }
-        result.resize(5);
     }
 
     ~FindCycleSolution() = default;
 
     void generate_graph(string &file_path) {
-        unordered_map<unsigned int, int> vertex_hash;
         FILE *file = fopen(file_path.c_str(), "r");
         unsigned int from, to, weight;
-        vector<pair<unsigned int, unsigned int>> input_pair;
         while (fscanf(file, "%u,%u,%u", &from, &to, &weight) != EOF) {
-            input_pair.emplace_back(from, to);
-            vertex_set.push_back(to);
-            vertex_set.push_back(from);
+            graph[from].insert(to);
+            rev[to][from] = true;
         }
-        sort(vertex_set.begin(), vertex_set.end());
-        vertex_set.erase(unique(vertex_set.begin(), vertex_set.end()), vertex_set.end());
+        visited = new bool[total_vertex]{false};
 
-        for (auto &vertex : vertex_set) {
-            vertex_hash[vertex] = total_vertex++;
-        }
-
-        graph.resize(total_vertex);
-        reverse_graph.resize(total_vertex);
-        visited.resize(total_vertex);
-
-        int f, t;
-        for (int i = 0; i < total_vertex; i++) {
-            reverse_graph[i].resize(total_vertex, false);
-        }
-
-        for (auto &pair : input_pair) {
-            f = vertex_hash[pair.first], t = vertex_hash[pair.second];
-            graph[f].insert(t);
-            reverse_graph[t][f] = true;
-        }
     }
 
 
@@ -82,12 +59,11 @@ public:
                 }
                 result[depth - 2].push_back(tempStack[depth - 2]);
                 ++cycle_num;
-
-            } else if (visited[adjacent] == false && adjacent > start) {
+            } else if (!visited[adjacent] && adjacent > start) {
                 if (depth < 5) {
                     findAllSimpleCycles(start, adjacent, depth + 1);
                 } else if (depth == 5) {
-                    if (reverse_graph[start][adjacent]) {
+                    if (rev[start][adjacent]) {
                         pointStack[depth + 1] = adjacent;
                         for (int i = 0; i < depth + 2; ++i) {
                             tempStack[depth - 1][i] = vertex_set[pointStack[i]];
@@ -104,7 +80,7 @@ public:
     void output(string &path) {
         FILE *file = fopen(path.c_str(), "w");
         fprintf(file, "%d\n", cycle_num);
-        for (auto i : result) {
+        for (auto &i : result) {
             for (auto &cycle : i) {
                 fprintf(file, "%u", cycle[0]);
                 for (int j = 1; j < cycle.size(); ++j) {
@@ -117,14 +93,14 @@ public:
     }
 
 private:
-    vector<bool> visited;
-    int pointStack[7];
+    bool *visited{};
+    int pointStack[7]{};
     vector<vector<unsigned int>> tempStack;
-    vector<vector<vector<unsigned int>>> result;
+    vector<vector<unsigned int>> result[5];
 
     vector<unsigned int> vertex_set;
-    vector<set<int>> graph;
-    vector<vector<bool>> reverse_graph;
+    set<int> graph[280000];
+    bool rev[280000][280000];
     int total_vertex;
     int cycle_num;
 };
@@ -132,16 +108,16 @@ private:
 int main() {
 //    clock_t start, finish;
 //    start = clock();
-//    string data_path = R"(D:\hw\data\test_data.txt)";
-//    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
-//    string huawei_path = R"(/root/hw/data/test_data.txt)";
-//    string o = "result.txt";
+    string data_path = R"(D:\hw\data\test_data.txt)";
+    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
+    string huawei_path = R"(/root/hw/data/test_data.txt)";
+    string o = "result.txt";
     string iPath = "/data/test_data.txt";
     string oPath = "/projects/student/result.txt";
     FindCycleSolution solution;
-    solution.generate_graph(iPath);
+    solution.generate_graph(data_path);
     solution.findCyclesInScc();
-    solution.output(oPath);
+    solution.output(o);
 
     return 0;
 }
