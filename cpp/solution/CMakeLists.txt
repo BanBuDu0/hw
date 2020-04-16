@@ -3,7 +3,7 @@ project(solution)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--stack,1000000000")
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--stack,1000000000")
 
 add_executable(solution
         test0416_3.cpp)
