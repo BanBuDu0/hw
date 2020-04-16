@@ -183,16 +183,16 @@ private:
 int main() {
 //    clock_t start, finish;
 //    start = clock();
-    string data_path = R"(D:\hw\data\test_data.txt)";
-    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
-    string huawei_path = R"(/root/hw/data/test_data.txt)";
-    string o = "result.txt";
+//    string data_path = R"(D:\hw\data\test_data.txt)";
+//    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
+//    string huawei_path = R"(/root/hw/data/test_data.txt)";
+//    string o = "result.txt";
     string iPath = "/data/test_data.txt";
     string oPath = "/projects/student/result.txt";
     FindCycleSolution solution;
-    solution.generate_graph(linux_path);
+    solution.generate_graph(iPath);
     solution.finCycle();
-    solution.output(o);
+    solution.output(oPath);
 
     return 0;
 }
