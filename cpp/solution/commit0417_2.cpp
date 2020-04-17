@@ -1,8 +1,7 @@
 //
 // Created by syj on 2020/4/11.
 // 修改了图的存储结构
-// 在commit0416_2的基础上
-// graph, reverse_graph, visited, result;
+// 在commit0416_2的基础上加上多线程，变慢了。。。
 // 8.3003
 //
 #include <iostream>
