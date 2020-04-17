@@ -3,6 +3,7 @@
 // 修改了图的存储结构
 // 在commit0416_2的基础上
 // graph, reverse_graph, visited, result;
+// 8.3003
 //
 #include <iostream>
 #include <list>
@@ -49,13 +50,13 @@ public:
             vertex_hash[vertex] = total_vertex++;
         }
 
-        graph = new set<int>[total_vertex];
-        reverse_graph = new bool *[total_vertex];
+        graph.resize(total_vertex);
+        reverse_graph.resize(total_vertex);
         visited1 = new bool[total_vertex]{false};
         visited2 = new bool[total_vertex]{false};
         int f, t;
         for (int i = 0; i < total_vertex; i++) {
-            reverse_graph[i] = new bool[total_vertex]{false};
+            reverse_graph[i].resize(total_vertex, false);
         }
 
         for (auto &pair : input_pair) {
@@ -173,24 +174,24 @@ private:
     vector<vector<unsigned int>> result1[5], result2[5];
 
     vector<unsigned int> vertex_set;
-    set<int> *graph;
-    bool **reverse_graph;
+    vector<set<int>> graph;
+    vector<vector<bool>> reverse_graph;
     int total_vertex;
     int cycle_num1, cycle_num2;
 };
 
 int main() {
-    clock_t start, finish;
-    start = clock();
-    string data_path = R"(D:\hw\data\test_data.txt)";
-    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
-    string huawei_path = R"(/root/hw/data/test_data.txt)";
-    string o = "result.txt";
+//    clock_t start, finish;
+//    start = clock();
+//    string data_path = R"(D:\hw\data\test_data.txt)";
+//    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
+//    string huawei_path = R"(/root/hw/data/test_data.txt)";
+//    string o = "result.txt";
     string iPath = "/data/test_data.txt";
     string oPath = "/projects/student/result.txt";
     FindCycleSolution solution;
-    solution.generate_graph(data_path);
+    solution.generate_graph(iPath);
     solution.finCycle();
-    solution.output(o);
+    solution.output(oPath);
     return 0;
 }
