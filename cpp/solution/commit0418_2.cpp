@@ -1,8 +1,8 @@
 //
 // Created by syj on 2020/4/18.
 // 修改了图的存储结构
-// 在commit04167_3的基础上修改了result的结构
-// 7.7772
+// 在commit0418_1的基础上修改了vertex_set为int，没有报错，说明vertex都是int
+// 7.7371
 //
 #include <iostream>
 #include <list>
@@ -16,14 +16,10 @@
 
 using namespace std;
 
-
 class FindCycleSolution {
 public:
     FindCycleSolution() {
         cycle_num = 0, total_vertex = 0;
-        for (int i = 0; i < 5; ++i) {
-            tempStack[i].resize(i + 3);
-        }
         result[0].resize(3 * 500000);
         result[1].resize(4 * 500000);
         result[2].resize(5 * 1000000);
@@ -122,11 +118,10 @@ public:
 private:
     bool *visited;
     int pointStack[7];
-    vector<unsigned int> tempStack[5];
     vector<unsigned int> result[5];
     int result_index[5]{};
 
-    vector<unsigned int> vertex_set;
+    vector<int> vertex_set;
     vector<set<int>> graph;
     vector<vector<bool>> reverse_graph;
     int total_vertex;
