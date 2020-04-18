@@ -1,7 +1,8 @@
 //
 // Created by syj on 2020/4/11.
 // 修改了图的存储结构
-// 在commit04167_3的基础上
+// 在commit04167_3的基础上修改了result的结构
+// 7.7772
 //
 #include <iostream>
 #include <list>
@@ -10,7 +11,6 @@
 #include <set>
 #include <deque>
 #include <unordered_map>
-#include <algorithm>
 
 #pragma comment(linker, "/STACK:10000000")
 
@@ -24,11 +24,11 @@ public:
         for (int i = 0; i < 5; ++i) {
             tempStack[i].resize(i + 3);
         }
-        result[0].resize(500000);
-        result[1].resize(500000);
-        result[2].resize(1000000);
-        result[3].resize(2000000);
-        result[4].resize(3000000);
+        result[0].resize(3 * 500000);
+        result[1].resize(4 * 500000);
+        result[2].resize(5 * 1000000);
+        result[3].resize(6 * 2000000);
+        result[4].resize(7 * 3000000);
     }
 
     ~FindCycleSolution() = default;
@@ -80,10 +80,9 @@ public:
         for (auto &adjacent : graph[current]) {
             if (adjacent == start && depth > 1) {
                 for (int i = 0; i < depth + 1; ++i) {
-                    tempStack[depth - 2][i] = vertex_set[pointStack[i]];
+                    result[depth - 2][((depth + 1) * result_index[depth - 2]) + i] = vertex_set[pointStack[i]];
                 }
-                result[depth - 2][result_index[depth - 2]++].assign(make_move_iterator(tempStack[depth - 2].begin()),
-                                                                    make_move_iterator(tempStack[depth - 2].end()));
+                ++result_index[depth - 2];
                 ++cycle_num;
             } else if (!visited[adjacent] && adjacent > start) {
                 if (depth < 5) {
@@ -92,11 +91,9 @@ public:
                     if (reverse_graph[start][adjacent]) {
                         pointStack[depth + 1] = adjacent;
                         for (int i = 0; i < depth + 2; ++i) {
-                            tempStack[depth - 1][i] = vertex_set[pointStack[i]];
+                            result[depth - 1][((depth + 2) * result_index[depth - 1]) + i] = vertex_set[pointStack[i]];
                         }
-                        result[depth - 1][result_index[depth - 1]++].assign(
-                                make_move_iterator(tempStack[depth - 1].begin()),
-                                make_move_iterator(tempStack[depth - 1].end()));
+                        ++result_index[depth - 1];
                         ++cycle_num;
                     }
                 }
@@ -110,10 +107,10 @@ public:
         fprintf(file, "%d\n", cycle_num);
         int i = 0;
         for (auto &cycles: result) {
-            for (int j = 0; j < result_index[i]; ++j) {
-                fprintf(file, "%u", *cycles[j].begin());
-                for (auto it = cycles[j].begin() + 1; it != cycles[j].end(); ++it) {
-                    fprintf(file, ",%u", *it);
+            for (int j = 0; j < (result_index[i] * (i + 3)); j += i + 3) {
+                fprintf(file, "%u", cycles[j]);
+                for (int k = j + 1; k < j + i + 3; ++k) {
+                    fprintf(file, ",%u", cycles[k]);
                 }
                 fprintf(file, "\n");
             }
@@ -126,7 +123,7 @@ private:
     bool *visited;
     int pointStack[7];
     vector<unsigned int> tempStack[5];
-    vector<vector<unsigned int>> result[5];
+    vector<unsigned int> result[5];
     int result_index[5]{};
 
     vector<unsigned int> vertex_set;
