@@ -10,7 +10,7 @@ add_executable(solution
         #        commit0417_2.cpp
 #        test0418_4.cpp
 #        commit0418_3.cpp
-        test0419_2.cpp
-        )
+#        commit0419_2.cpp
+        test0419_3.cpp)
 find_package(Threads REQUIRED)
 target_link_libraries(solution Threads::Threads)
