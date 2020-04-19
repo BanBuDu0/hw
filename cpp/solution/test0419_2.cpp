@@ -2,7 +2,8 @@
 // Created by syj on 2020/4/19.
 // 修改了图的存储结构
 // 在commit0418_2的基础上修改了图的结构，顶点不用哈希。。。,事实证明定点数280000可行
-// 6.8813
+// 反正多线程都是负优化
+// 7.1106
 //
 #include <iostream>
 #include <list>
@@ -30,10 +31,12 @@ public:
         result2[2].resize(5 * 1000000);
         result2[3].resize(6 * 2000000);
         result2[4].resize(7 * 3000000);
-        graph = new set<int>[500000];
-        reverse_graph = new set<int>[500000];
+
         visited1 = new bool[500000]{false};
         visited2 = new bool[500000]{false};
+
+        graph = new set<int>[500000];
+        reverse_graph = new set<int>[500000];
     }
 
     ~FindCycleSolution() = default;
@@ -102,11 +105,9 @@ public:
         visited1[current] = false;
     }
 
-
     void findAllSimpleCycles2(int start, int current, int depth) {
         pointStack2[depth] = current;
         visited2[current] = true;
-
         for (auto &adjacent : graph[current]) {
             if (adjacent == start && depth > 1) {
                 for (int i = 0; i < depth + 1; ++i) {
@@ -135,24 +136,22 @@ public:
         visited2[current] = false;
     }
 
-
     void output(string &path) {
         FILE *file = fopen(path.c_str(), "w");
         fprintf(file, "%d\n", cycle_num1 + cycle_num2);
 //        for (auto &cycles: result) {
         for (int i = 0; i < 5; ++i) {
-            auto cycles1 = result1[i], cycles2 = result2[i];
             for (int j = 0; j < (result_index1[i] * (i + 3)); j += i + 3) {
-                fprintf(file, "%u", cycles1[j]);
+                fprintf(file, "%u", result1[i][j]);
                 for (int k = j + 1; k < j + i + 3; ++k) {
-                    fprintf(file, ",%u", cycles1[k]);
+                    fprintf(file, ",%u", result1[i][k]);
                 }
                 fprintf(file, "\n");
             }
             for (int j = 0; j < (result_index2[i] * (i + 3)); j += i + 3) {
-                fprintf(file, "%u", cycles2[j]);
+                fprintf(file, "%u", result2[i][j]);
                 for (int k = j + 1; k < j + i + 3; ++k) {
-                    fprintf(file, ",%u", cycles2[k]);
+                    fprintf(file, ",%u", result2[i][k]);
                 }
                 fprintf(file, "\n");
             }
@@ -173,14 +172,14 @@ private:
 };
 
 int main() {
-    string data_path = R"(D:\hw\data\test_data.txt)";
-    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
-    string huawei_path = R"(/root/hw/data/test_data.txt)";
-    string oPath = "result.txt";
-//    string oPath = "/projects/student/result.txt";
+//    string data_path = R"(D:\hw\data\test_data.txt)";
+//    string linux_path = R"(/home/syj/Documents/hw/data/test_data.txt)";
+//    string huawei_path = R"(/root/hw/data/test_data.txt)";
+//    string oPath = "result.txt";
+    string oPath = "/projects/student/result.txt";
     string iPath = "/data/test_data.txt";
     FindCycleSolution solution;
-    solution.generate_graph(data_path);
+    solution.generate_graph(iPath);
     solution.findCycles();
     solution.output(oPath);
 
