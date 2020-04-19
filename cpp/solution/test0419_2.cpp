@@ -135,6 +135,7 @@ public:
         visited2[current] = false;
     }
 
+
     void output(string &path) {
         FILE *file = fopen(path.c_str(), "w");
         fprintf(file, "%d\n", cycle_num1 + cycle_num2);
