@@ -2,8 +2,9 @@
 // Created by syj on 2020/4/19.
 // 修改了图的存储结构
 // 在commit0418_2的基础上修改了图的结构，顶点不用哈希。。。,事实证明定点数280000可行
+// 用互斥量
 // 反正多线程都是负优化
-// 7.1106
+// 7.0560
 //
 #include <iostream>
 #include <list>
@@ -27,11 +28,11 @@ public:
         result[3].resize(6 * 2000000);
         result[4].resize(7 * 3000000);
 
-        visited1 = new bool[500000]{false};
-        visited2 = new bool[500000]{false};
+        visited1 = new bool[300000]{false};
+        visited2 = new bool[300000]{false};
 
-        graph = new set<int>[500000];
-        reverse_graph = new set<int>[500000];
+        graph = new set<int>[300000];
+        reverse_graph = new set<int>[300000];
     }
 
     ~FindCycleSolution() = default;
@@ -58,13 +59,13 @@ public:
     }
 
     void findCyclesInScc1() {
-        for (int i = 0; i < (total_vertex * 2) / 3; ++i) {
+        for (int i = 0; i < (total_vertex / 3); ++i) {
             findAllSimpleCycles1(vertex_set[i], vertex_set[i], 0);
         }
     }
 
     void findCyclesInScc2() {
-        for (int i = (total_vertex * 2) / 3; i < total_vertex; ++i) {
+        for (int i = (total_vertex  / 3); i < total_vertex; ++i) {
             findAllSimpleCycles2(vertex_set[i], vertex_set[i], 0);
         }
     }
