@@ -9,8 +9,7 @@
 #include <vector>
 #include <string>
 #include <set>
-#include <cstdlib>
-#include <cstring>
+#include <unordered_map>
 
 #pragma comment(linker, "/STACK:1000000000")
 
@@ -26,7 +25,8 @@ public:
         result[3].resize(6 * 2000000);
         result[4].resize(7 * 3000000);
         graph = new set<int>[300000];
-        reverse_graph = new set<int>[300000];
+        reverse_graph = new vector<int>[300000];
+        reverse_graph2 = new unordered_map<int, vector<int>>[300000];
         visited = new bool[300000]{false};
     }
 
@@ -39,7 +39,7 @@ public:
             vertex_set.insert(to);
             vertex_set.insert(from);
             graph[from].insert(to);
-            reverse_graph[to].insert(from);
+            reverse_graph[to].push_back(from);
         }
     }
 
@@ -49,22 +49,36 @@ public:
         }
     }
 
+    void generate_reverse() {
+        for (auto &i : vertex_set) {
+            unordered_map<int, vector<int>> temp;
+            // j is adj of i
+            for (auto &j : reverse_graph[i]) {
+                for (auto &k : reverse_graph[j]) {
+                    temp[k].push_back(j);
+                }
+            }
+            reverse_graph2[i] = temp;
+        }
+    }
+
+
     void findAllSimpleCycles(int start, int current, int depth) {
         pointStack[depth] = current;
         visited[current] = true;
 
         for (auto &adjacent : graph[current]) {
             if (adjacent == start && depth > 1) {
-                memcpy(result[depth - 2][((depth + 1) * result_index[depth - 2])], pointStack, depth + 1);
                 for (int i = 0; i < depth + 1; ++i) {
                     result[depth - 2][((depth + 1) * result_index[depth - 2]) + i] = pointStack[i];
                 }
                 ++result_index[depth - 2];
                 ++cycle_num;
             } else if (!visited[adjacent] && adjacent > start) {
-                if (depth < 5) {
+                if (depth < 4) {
                     findAllSimpleCycles(start, adjacent, depth + 1);
-                } else if (depth == 5) {
+                } else if (depth == 4) {
+                    bool isSecond = false;
                     for (auto &v:reverse_graph[start]) {
                         if (v == adjacent) {
                             pointStack[depth + 1] = adjacent;
@@ -73,7 +87,26 @@ public:
                             }
                             ++result_index[depth - 1];
                             ++cycle_num;
+                            isSecond = true;
                             break;
+                        }
+                    }
+                    if (!isSecond) {
+                        for (pair<int, vector<int>> m : reverse_graph2[start]) {
+                            int third_vertex = m.first;
+                            if (third_vertex == adjacent) {
+                                for (auto &v : m.second) {
+                                    if (v > start && !visited[v]) {
+                                        pointStack[depth + 1] = adjacent;
+                                        pointStack[depth + 2] = v;
+                                        for (int i = 0; i < depth + 3; ++i) {
+                                            result[depth][((depth + 3) * result_index[depth]) + i] = pointStack[i];
+                                        }
+                                        ++result_index[depth];
+                                        ++cycle_num;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -106,7 +139,9 @@ private:
     int result_index[5]{};
 
     set<int> vertex_set;
-    set<int> *graph, *reverse_graph;
+    set<int> *graph;
+    vector<int> *reverse_graph;
+    unordered_map<int, vector<int>> *reverse_graph2;
     int cycle_num;
 };
 
@@ -119,6 +154,7 @@ int main() {
     string iPath = "/data/test_data.txt";
     FindCycleSolution solution;
     solution.generate_graph(iPath);
+    solution.generate_reverse();
     solution.findCyclesInScc();
     solution.output(oPath);
 
